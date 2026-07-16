@@ -28,8 +28,6 @@ _G.path = {}
 function path.split(improvedPath)
 	local diskStr = string.match(improvedPath, "^%d+")
 	local disk = tonumber(diskStr)
-	print(improvedPath)
-	print(diskStr)
 	local partition = string.match(improvedPath, "^[^:]+", #diskStr + 2)
 	local filename = string.sub(improvedPath, #diskStr + #partition + 3)
 	return disk, partition, filename
