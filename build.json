@@ -1,0 +1,22 @@
+{
+    "entrypoint" : "bios:bios.lua",
+    "language" : "Lua",
+    "partitions" : [
+        {
+            "path" : "bios",
+            "source" : -1,
+            "readonly" : false,
+            "hidden" : false
+        },
+        {
+            "path" : "system",
+            "readonly" : false,
+            "hidden" : false
+        },
+        {
+            "path" : "user",
+            "readonly" : false,
+            "hidden" : false
+        }
+    ]
+}
