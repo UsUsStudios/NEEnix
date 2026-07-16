@@ -1,5 +1,3 @@
-print("hi")
-
 return {
 	["Config"] = {
 		["DefaultEntry"] = 1, -- the option that appears highlighted first when entering the boot menu
