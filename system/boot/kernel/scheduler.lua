@@ -22,6 +22,7 @@ function scheduler.new_process(fn, parent_pid)
 		children = {},
 		fds = {}, -- your open file table
 		signals = {}, -- pending signal queue
+		to_return = nil, -- return to the coroutine on next resume
 	}
 	scheduler.processes[pcb.pid] = pcb
 	if parent_pid and scheduler.processes[parent_pid] then
@@ -34,8 +35,7 @@ end
 local function handle_syscall(pcb, req)
 	for callName, call in pairs(syscalls) do
 		if req.type == callName then
-			call(req)
-			return
+			pcb.to_return = call(req)
 		end
 	end
 	if req == nil then
@@ -64,7 +64,7 @@ function scheduler.scheduler_tick()
 		local pcb = scheduler.processes[pid]
 		if pcb and pcb.state == "ready" then
 			pcb.state = "running"
-			local ok, req = coroutine.resume(pcb.co)
+			local ok, req = coroutine.resume(pcb.co, pcb.to_return)
 
 			if coroutine.status(pcb.co) == "dead" then
 				pcb.state = "zombie"
