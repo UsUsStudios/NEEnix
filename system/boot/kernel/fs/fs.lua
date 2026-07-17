@@ -1,3 +1,5 @@
+-- The function signatures for any fs implementation
+
 local fs = {}
 local fd_list = ...
 
