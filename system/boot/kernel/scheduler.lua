@@ -72,6 +72,7 @@ function scheduler.tick()
 				pcb.state = "zombie"
 				pcb.exit_code = ok and (req or 0) or -1
 				for _, wpid in ipairs(pcb.waiters) do
+					scheduler.processes[wpid].state = "ready"
 					scheduler.enqueue(wpid)
 				end
 			elseif not ok then

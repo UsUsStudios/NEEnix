@@ -14,15 +14,16 @@ scheduler.new_process(function()
 	local pid = coroutine.yield({ type = "getpid" })
 	local pcb = scheduler.new_process(function()
 		coroutine.yield()
+		coroutine.yield()
+		coroutine.yield()
+		coroutine.yield()
+		coroutine.yield()
+		coroutine.yield()
 		print("hi")
 	end, pid)
 
+	coroutine.yield({ type = "wait", pid = pcb.pid })
 	print("parent")
-
-	--while true do
-	--	coroutine.yield(0, { type = "sleep", seconds = 0.333 })
-	--	print("hi")
-	--end
 end)
 
 while true do
