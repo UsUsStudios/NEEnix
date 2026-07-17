@@ -1,11 +1,12 @@
 local scheduler = {}
-local syscalls = include("syscalls.lua")
+
+local syscalls = include("syscalls.lua")(scheduler)
 
 scheduler.pid_counter = 0
 scheduler.processes = {}
 
 local run_queue = {}
-local function enqueue(pid)
+function scheduler.enqueue(pid)
 	table.insert(run_queue, pid)
 end
 
@@ -28,32 +29,33 @@ function scheduler.new_process(fn, parent_pid)
 	if parent_pid and scheduler.processes[parent_pid] then
 		table.insert(scheduler.processes[parent_pid].children, pcb.pid)
 	end
-	enqueue(pcb.pid)
+	scheduler.enqueue(pcb.pid)
 	return pcb
 end
 
 local function handle_syscall(pcb, req)
-	for callName, call in pairs(syscalls) do
-		if req.type == callName then
-			pcb.to_return = call(req)
-		end
-	end
 	if req == nil then
 		pcb.state = "ready"
-		enqueue(pcb.pid)
+		scheduler.enqueue(pcb.pid)
 	else
+		for callName, call in pairs(syscalls) do
+			if req.type == callName then
+				pcb.to_return = call(pcb, req)
+				return
+			end
+		end
 		pcb.state = "ready"
-		enqueue(pcb.pid)
+		scheduler.enqueue(pcb.pid)
 	end
 end
 
-function scheduler.scheduler_tick()
+function scheduler.tick()
 	local now = chip.getTime()
 	-- wake up sleeping processes
 	for pid, pcb in pairs(scheduler.processes) do
 		if pcb.state == "sleeping" and pcb.wake_at <= now then
 			pcb.state = "ready"
-			enqueue(pid)
+			scheduler.enqueue(pid)
 		end
 	end
 
@@ -70,14 +72,14 @@ function scheduler.scheduler_tick()
 				pcb.state = "zombie"
 				pcb.exit_code = ok and (req or 0) or -1
 				for _, wpid in ipairs(pcb.waiters) do
-					enqueue(wpid)
+					scheduler.enqueue(wpid)
 				end
 			elseif not ok then
 				-- uncaught error
 				pcb.state = "zombie"
 				pcb.exit_code = -1
 			else
-				handle_syscall()
+				handle_syscall(pcb, req)
 			end
 		end
 	end
