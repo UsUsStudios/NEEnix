@@ -8,7 +8,7 @@ return {
 			["OS Name"] = "NEEnix",
 			["OS Version"] = "0.0.1",
 			["OS Description"] = "NEATO-compatible UNIX-like system",
-			["OS Boot Path"] = "0:system:boot/kernel.lua",
+			["OS Boot Path"] = "0:system:/boot/kernel/kernel.lua",
 		},
 		{
 			["OS Name"] = "OS Installer",

@@ -17,7 +17,6 @@ local function deepCopy(obj, seen)
 	end
 	return copy
 end
-
 local font
 local _G_COPY
 
@@ -129,9 +128,14 @@ local function init()
 
 		fontHeight = font.getHeight()
 		fontWidth = font.getWidth()
+
+		font.drawLine(3, 3, "[NEATOBIOS] [INFO] Loaded psf renderer", options)
+		screen.draw()
 	end
-	font.drawLine(3, 3, "[NEATOBIOS] [INFO] Loaded psf renderer", options)
+
+	font.drawLine(3, 3 + fontHeight * 4, "[NEATOBIOS] [INFO] Copying _G", options)
 	screen.draw()
+	_G_COPY = deepCopy(_G)
 
 	-- Load jojotastic777's files shim and require
 	do
@@ -150,10 +154,6 @@ local function init()
 		screen.draw()
 		package.path = table.concat({ "0:neatobios:/common/?.lua", "0:neatobios:/?.lua" }, ";")
 	end
-
-	font.drawLine(3, 3 + fontHeight * 4, "[NEATOBIOS] [INFO] Copying _G", options)
-	screen.draw()
-	_G_COPY = deepCopy(_G)
 
 	font.drawLine(3, 3 + fontHeight * 5, "[NEATOBIOS] [INFO] Loading boot configs", options)
 	screen.draw()
