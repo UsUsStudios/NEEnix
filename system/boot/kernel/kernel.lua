@@ -7,7 +7,7 @@ end
 
 local scheduler = include("scheduler.lua")()
 
-while true do
-	scheduler.tick()
-	coroutine.yield()
-end
+--while true do
+--	scheduler.tick()
+--	coroutine.yield()
+--end
