@@ -22,7 +22,7 @@ function scheduler.new_process(fn, parent_pid)
 		waiters = {}, -- pids blocked in wait() on this pid
 		children = {},
 		fds = {}, -- your open file table
-		signals = {}, -- pending signal queue
+		sighandlers = {},
 		to_return = nil, -- return to the coroutine on next resume
 	}
 	scheduler.processes[pcb.pid] = pcb
@@ -83,6 +83,13 @@ function scheduler.tick()
 				handle_syscall(pcb, req)
 			end
 		end
+	end
+end
+
+function scheduler.printProcesses()
+	print("PID", "state", "wake_at", "exit_code")
+	for _, pcb in pairs(scheduler.processes) do
+		print(pcb.pid, pcb.state, pcb.wake_at, pcb.exit_code)
 	end
 end
 
