@@ -37,6 +37,6 @@ function vfs.mountFromFile(mountpoint, path, args)
 	vfs.mount(mountpoint, fs)
 end
 
-vfs.mountFromFile("/", "system:/boot/kernel/fs/partfs.lua", { "hi", "hello" })
+vfs.mountFromFile("/", "system:/boot/kernel/fs/partfs.lua", { "system", 0 })
 
 return vfs

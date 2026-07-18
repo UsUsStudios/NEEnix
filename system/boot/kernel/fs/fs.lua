@@ -3,15 +3,43 @@
 local function create(fd_list, next_fd)
 	local fs = {}
 
-	function fs.open(path, mode) end
-	function fs.close(fd) end
-	function fs.read(fd, buffer, count) end
-	function fs.lseek(fd, offset, whence) end
-	function fs.write(fd, buffer) end
-	function fs.mkdir(path) end
-	function fs.unlink(path) end
-	function fs.rename(oldpath, newpath) end
-	function fs.readdir(path) end
+	function fs.open(path, mode)
+		return
+	end
+
+	function fs.close(fd)
+		return
+	end
+
+	function fs.read(fd, buffer, count)
+		return
+	end
+
+	function fs.lseek(fd, offset, whence)
+		return
+	end
+
+	function fs.write(fd, buffer)
+		return
+	end
+
+	function fs.mkdir(path)
+		return
+	end
+
+	function fs.unlink(path)
+		return
+	end
+
+	function fs.rename(oldpath, newpath)
+		return
+	end
+
+	function fs.readdir(path)
+		return
+	end
+
+	return
 end
 
 return create
