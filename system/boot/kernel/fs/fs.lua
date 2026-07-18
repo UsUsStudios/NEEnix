@@ -3,6 +3,10 @@
 local function create(fd_list, next_fd)
 	local fs = {}
 
+	function fs.stringrepr()
+		return
+	end
+
 	function fs.open(path, mode)
 		return
 	end

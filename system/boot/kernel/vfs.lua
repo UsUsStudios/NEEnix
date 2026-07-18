@@ -29,7 +29,7 @@ function vfs.resolvePathFs(path)
 	end
 end
 
-function vfs.mountFromFile(mountpoint, path, args)
+local function mountFromLuaFile(mountpoint, path, args)
 	local handle = files.open(path)
 	local data = handle.read("a")
 	handle.close()
@@ -37,6 +37,14 @@ function vfs.mountFromFile(mountpoint, path, args)
 	vfs.mount(mountpoint, fs)
 end
 
-vfs.mountFromFile("/", "system:/boot/kernel/fs/partfs.lua", { "system", 0 })
+function vfs.mountFromFile(mountpoint, path)
+	local handle = files.open(path)
+	local data = handle.read("a")
+	handle.close()
+	local fsfile = load(data, path, nil, _G)()
+	mountFromLuaFile(mountpoint, fsfile[1], fsfile[2])
+end
+
+vfs.mountFromFile("/", "system:/boot/kernel/fs/rootfs")
 
 return vfs
