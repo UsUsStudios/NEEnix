@@ -76,25 +76,25 @@ return {
 	["close"] = function(pcb, request)
 		continue(pcb)
 		local fd = vfs.fd_list[request.fd]
-		fd.fs.close(fd)
+		fd.fs.close(request.fd)
 	end,
 
 	["read"] = function(pcb, request)
 		continue(pcb)
 		local fd = vfs.fd_list[request.fd]
-		return fd.fs.read(fd, request.count)
+		return fd.fs.read(request.fd, request.count)
 	end,
 
 	["lseek"] = function(pcb, request)
 		continue(pcb)
 		local fd = vfs.fd_list[request.fd]
-		return fd.fs.lseek(fd, request.offset, request.whence)
+		return fd.fs.lseek(request.fd, request.offset, request.whence)
 	end,
 
 	["write"] = function(pcb, request)
 		continue(pcb)
 		local fd = vfs.fd_list[request.fd]
-		fd.fs.write(fd, request.buffer)
+		fd.fs.write(request.fd, request.buffer)
 	end,
 
 	["mkdir"] = function(pcb, request)
