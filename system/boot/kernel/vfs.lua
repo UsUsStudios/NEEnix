@@ -2,7 +2,7 @@ local vfs = {}
 
 -- fd_list - key: fd, value: table
 --                     - must contain key "fs" with value of fs instance that owns fd
---                     - rest of table is up to fd to put
+--                     - rest of table is up to fs to define
 vfs.fd_list = {}
 local next_fd = { 0 }
 
@@ -44,7 +44,5 @@ function vfs.mountFromFile(mountpoint, path)
 	local fsfile = load(data, path, nil, _G)()
 	mountFromLuaFile(mountpoint, fsfile[1], fsfile[2])
 end
-
-vfs.mountFromFile("/", "system:/boot/kernel/fs/rootfs")
 
 return vfs

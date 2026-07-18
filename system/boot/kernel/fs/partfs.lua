@@ -8,39 +8,42 @@ local function create(fd_list, next_fd, partition, disk)
 	end
 
 	function fs.open(path, mode)
-		return
+		fd_list[next_fd[1]] = {
+			fs = fs,
+			handle = files.open(partition .. ":/" .. path, mode, disk),
+		}
+		next_fd[1] = next_fd[1] + 1
+		return next_fd[1] - 1
 	end
 
 	function fs.close(fd)
-		return
+		fd_list[fd].handle.flush()
+		fd_list[fd].handle.close()
+		fd_list[fd].close()
 	end
 
 	function fs.read(fd, count)
-		return
+		return fd_list[fd].handle.read(count)
 	end
 
 	function fs.lseek(fd, offset, whence)
-		return
+		fd_list[fd].handle.seek(whence, offset)
 	end
 
 	function fs.write(fd, buffer)
-		return
+		fd_list[fd].handle.write(buffer)
 	end
 
 	function fs.mkdir(path)
-		return
+		files.makeDir(partition .. ":/" .. path, disk)
 	end
 
 	function fs.unlink(path)
-		return
-	end
-
-	function fs.rename(oldpath, newpath)
-		return
+		files.delete(partition .. ":/" .. path, disk)
 	end
 
 	function fs.readdir(path)
-		return
+		return files.getChildren(partition .. ":/" .. path, disk)
 	end
 
 	return fs

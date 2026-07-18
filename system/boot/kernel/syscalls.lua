@@ -66,6 +66,7 @@ return {
 	------------------------------------------------------------------------------------
 	------------------------------------- FILE I/O -------------------------------------
 	------------------------------------------------------------------------------------
+
 	["open"] = function(pcb, request)
 		continue(pcb)
 		local normalized_path, fs = vfs.resolvePathFs(request.path)
@@ -87,7 +88,7 @@ return {
 	["lseek"] = function(pcb, request)
 		continue(pcb)
 		local fd = vfs.fd_list[request.fd]
-		fd.fs.lseek(fd, request.offset, request.whence)
+		pcb.to_return = fd.fs.lseek(fd, request.offset, request.whence)
 	end,
 
 	["write"] = function(pcb, request)
@@ -99,27 +100,23 @@ return {
 	["mkdir"] = function(pcb, request)
 		continue(pcb)
 		local normalized_path, fs = vfs.resolvePathFs(request.path)
-		fs.mkdir(normalized_path)
+		pcb.to_return = fs.mkdir(normalized_path)
 	end,
 
 	["unlink"] = function(pcb, request)
 		continue(pcb)
 		local normalized_path, fs = vfs.resolvePathFs(request.path)
-		fs.unlink(normalized_path)
-	end,
-
-	["rename"] = function(pcb, request)
-		continue(pcb)
-		local oldpath, oldfs = vfs.resolvePathFs(request.oldpath)
-		local newpath, newfs = vfs.resolvePathFs(request.newpath)
-		if oldfs == newfs then
-			fs.rename(oldpath, newpath)
-		end
+		pcb.to_return = fs.unlink(normalized_path)
 	end,
 
 	["readdir"] = function(pcb, request)
 		continue(pcb)
 		local normalized_path, fs = vfs.resolvePathFs(request.path)
 		pcb.to_return = fs.readdir(normalized_path, request.mode)
+	end,
+
+	["mount"] = function(pcb, request)
+		vfs.mountFromFile(request.mountpoint, request.fspath)
+		continue(pcb)
 	end,
 }

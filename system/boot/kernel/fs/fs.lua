@@ -35,10 +35,6 @@ local function create(fd_list, next_fd)
 		return
 	end
 
-	function fs.rename(oldpath, newpath)
-		return
-	end
-
 	function fs.readdir(path)
 		return
 	end
