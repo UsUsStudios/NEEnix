@@ -81,7 +81,7 @@ return {
 	["read"] = function(pcb, request)
 		continue(pcb)
 		local fd = vfs.fd_list[request.fd]
-		pcb.to_return = fd.fs.read(fd, request.buffer, request.count)
+		pcb.to_return = fd.fs.read(fd, request.count)
 	end,
 
 	["lseek"] = function(pcb, request)
