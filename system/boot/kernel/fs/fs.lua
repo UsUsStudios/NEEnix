@@ -43,7 +43,7 @@ local function create(fd_list, next_fd)
 		return
 	end
 
-	return
+	return fs
 end
 
 return create
