@@ -12,7 +12,6 @@ local function sortMountsCompare(mount1, mount2)
 	return #mount1.path > #mount2.path
 end
 
--- when initialized, vfs.fd_list and next_fd must be passed as arg to fs in that order
 function vfs.mount(mountpoint, fs)
 	table.insert(vfs.mounts, { path = mountpoint, fs = fs })
 	table.sort(vfs.mounts, sortMountsCompare)
@@ -29,5 +28,15 @@ function vfs.resolvePathFs(path)
 		end
 	end
 end
+
+function vfs.mountFromFile(mountpoint, path, args)
+	local handle = files.open(path)
+	local data = handle.read("a")
+	handle.close()
+	local fs = load(data, path, nil, _G)()(vfs.fd_list, next_fd, table.unpack(args))
+	vfs.mount(mountpoint, fs)
+end
+
+vfs.mountFromFile("/", "system:/boot/kernel/fs/partfs.lua", { "hi", "hello" })
 
 return vfs

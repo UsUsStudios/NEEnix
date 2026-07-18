@@ -1,6 +1,6 @@
--- The function signatures for any fs implementation
+-- Filesystem for an arbitrary partition on an arbitrary disk
 
-local function create(fd_list, next_fd)
+local function create(fd_list, next_fd, partition, disk)
 	local fs = {}
 
 	function fs.open(path, mode) end
