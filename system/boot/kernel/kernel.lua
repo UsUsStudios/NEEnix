@@ -7,7 +7,11 @@ end
 
 local scheduler = include("scheduler.lua")()
 
---while true do
---	scheduler.tick()
---	coroutine.yield()
---end
+scheduler.new_process(function()
+	coroutine.yield({ type = "mount", mountpoint = "/", fspath = "system:/boot/kernel/fs/rootfs" })
+end)
+
+while true do
+	scheduler.tick()
+	coroutine.yield()
+end

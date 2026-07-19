@@ -19,7 +19,7 @@ local function create(fd_list, next_fd, partition, disk)
 	function fs.close(fd)
 		fd_list[fd].handle.flush()
 		fd_list[fd].handle.close()
-		fd_list[fd].close()
+		fd_list[fd] = nil
 	end
 
 	function fs.read(fd, count)
@@ -27,7 +27,7 @@ local function create(fd_list, next_fd, partition, disk)
 	end
 
 	function fs.lseek(fd, offset, whence)
-		fd_list[fd].handle.seek(whence, offset)
+		return fd_list[fd].handle.seek(whence, offset)
 	end
 
 	function fs.write(fd, buffer)

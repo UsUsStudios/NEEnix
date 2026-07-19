@@ -112,7 +112,7 @@ return {
 	["readdir"] = function(pcb, request)
 		continue(pcb)
 		local normalized_path, fs = vfs.resolvePathFs(request.path)
-		return fs.readdir(normalized_path, request.mode)
+		return fs.readdir(normalized_path)
 	end,
 
 	["mount"] = function(pcb, request)
