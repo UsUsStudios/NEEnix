@@ -67,6 +67,7 @@ function scheduler.tick()
 		if pcb and pcb.state == "ready" then
 			pcb.state = "running"
 			local ok, req = coroutine.resume(pcb.co, pcb.to_return)
+			pcb.to_return = nil
 
 			if coroutine.status(pcb.co) == "dead" then
 				pcb.state = "zombie"
