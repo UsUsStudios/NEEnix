@@ -1,5 +1,3 @@
-local scheduler = ...
-
 local vfs = include("vfs.lua")()
 
 local SIGTERM = 1

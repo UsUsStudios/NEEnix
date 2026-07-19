@@ -1,4 +1,4 @@
-local scheduler = {}
+_G.scheduler = {}
 
 local syscalls = include("syscalls.lua")(scheduler)
 
@@ -35,6 +35,7 @@ function scheduler.create_env()
 	env.crypto = nil
 	env.load = nil
 	env.debug = nil
+	env.scheduler = nil
 
 	return env
 end
@@ -140,5 +141,3 @@ function scheduler.printProcesses()
 		print(pcb.pid, pcb.state, pcb.wake_at, pcb.exit_code)
 	end
 end
-
-return scheduler

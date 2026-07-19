@@ -5,7 +5,7 @@ function _G.include(path)
 	return load(data, "system:/boot/kernel/" .. path, nil, _G)
 end
 
-local scheduler = include("scheduler.lua")()
+include("scheduler.lua")()
 
 scheduler.new_process(function()
 	coroutine.yield({ type = "mount", mountpoint = "/", fspath = "system:/boot/kernel/fs/rootfs" })
