@@ -5,6 +5,40 @@ local syscalls = include("syscalls.lua")(scheduler)
 scheduler.pid_counter = 0
 scheduler.processes = {}
 
+local function deep_copy(obj, seen)
+	if type(obj) ~= "table" then
+		return obj
+	end
+
+	seen = seen or {}
+
+	if seen[obj] then
+		return seen[obj]
+	end
+
+	local copy = {}
+	seen[obj] = copy
+
+	for k, v in pairs(obj) do
+		copy[deep_copy(k, seen)] = deep_copy(v, seen)
+	end
+	return copy
+end
+
+function scheduler.create_env()
+	local env = deep_copy(_G)
+	env.chip = nil
+	env.headsup = nil
+	env.event = nil
+	env.io = nil
+	env.internet = nil
+	env.crypto = nil
+	env.load = nil
+	env.debug = nil
+
+	return env
+end
+
 local run_queue = {}
 function scheduler.enqueue(pid)
 	table.insert(run_queue, pid)

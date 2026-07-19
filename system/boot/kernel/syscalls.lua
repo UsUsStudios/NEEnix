@@ -58,10 +58,31 @@ return {
 
 		if request.sig ~= SIGKILL then
 			pcb.sighandlers[request.sig] = request.handler
+		else
+			error("cannot set a signal handler for SIGKILL")
 		end
 	end,
 
-	-- ["spawn"] = function(pcb, request) end -- spawn a new process executing a file
+	["spawn"] = function(pcb, request) -- spawn a new process executing a file
+		continue(pcb)
+		local env = request.env or scheduler.create_env()
+		local normalized_path, fs = vfs.resolvePathFs(request.path)
+		local fd = fs.open(normalized_path, "r")
+		local fn = load(fs.read(fd, "a"), request.path, nil, env)
+		if fn == nil then
+			error("function loaded from file invalid")
+		end
+
+		fs.close(fd)
+
+		if request.args then
+			scheduler.new_process(function()
+				fn(table.unpack(request.args))
+			end, pcb.pid)
+		else
+			scheduler.new_process(fn, pcb.pid)
+		end
+	end,
 
 	------------------------------------------------------------------------------------
 	------------------------------------- FILE I/O -------------------------------------
