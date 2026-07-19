@@ -11,6 +11,10 @@ function scheduler.enqueue(pid)
 end
 
 function scheduler.new_process(fn, parent_pid)
+	if fn == nil then
+		error("cannot start process with function nil")
+	end
+
 	scheduler.pid_counter = scheduler.pid_counter + 1
 	local pcb = {
 		pid = scheduler.pid_counter,
@@ -24,6 +28,7 @@ function scheduler.new_process(fn, parent_pid)
 		fds = {}, -- your open file table
 		sighandlers = {},
 		to_return = nil, -- return to the coroutine on next resume
+		error = nil, -- error message to return to coroutine on next resume
 	}
 	scheduler.processes[pcb.pid] = pcb
 	if parent_pid and scheduler.processes[parent_pid] then
@@ -66,7 +71,12 @@ function scheduler.tick()
 		local pcb = scheduler.processes[pid]
 		if pcb and pcb.state == "ready" then
 			pcb.state = "running"
-			local ok, req = coroutine.resume(pcb.co, pcb.to_return)
+			local ok, req
+			if pcb.error ~= nil then
+				ok, req = coroutine.resume(pcb.co, nil, pcb.error)
+			else
+				ok, req = coroutine.resume(pcb.co, pcb.to_return)
+			end
 			pcb.to_return = nil
 
 			if coroutine.status(pcb.co) == "dead" then
@@ -81,7 +91,10 @@ function scheduler.tick()
 				pcb.state = "zombie"
 				pcb.exit_code = -1
 			else
-				handle_syscall(pcb, req)
+				local syscall_ok, error = pcall(handle_syscall, pcb, req)
+				if not syscall_ok then
+					pcb.error = error
+				end
 			end
 		end
 	end

@@ -8,9 +8,13 @@ local function create(fd_list, next_fd, partition, disk)
 	end
 
 	function fs.open(path, mode)
+		local handle = files.open(partition .. ":/" .. path, mode, disk)
+		if handle == nil then
+			error("file handle is nil")
+		end
 		fd_list[next_fd[1]] = {
 			fs = fs,
-			handle = files.open(partition .. ":/" .. path, mode, disk),
+			handle = handle,
 		}
 		next_fd[1] = next_fd[1] + 1
 		return next_fd[1] - 1

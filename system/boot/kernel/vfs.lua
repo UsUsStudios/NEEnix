@@ -32,6 +32,9 @@ end
 
 local function mountFromLuaFile(mountpoint, path, args)
 	local handle = files.open(path)
+	if handle == nil then
+		error("cannot mount because fs file handle is nil")
+	end
 	local data = handle.read("a")
 	handle.close()
 	local fs = load(data, path, nil, _G)()(vfs.fd_list, next_fd, table.unpack(args))
@@ -43,6 +46,9 @@ function vfs.mountFromFile(mountpoint, path)
 	local normalized_path, fs = vfs.resolvePathFs(path)
 	if normalized_path == nil then
 		local handle = files.open(path)
+		if handle == nil then
+			error("cannot mount from file because mount file handle is nil")
+		end
 		data = handle.read("a")
 		handle.close()
 	else
