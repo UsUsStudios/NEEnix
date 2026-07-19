@@ -6,6 +6,7 @@ local vfs = {}
 vfs.fd_list = {}
 local next_fd = { 0 }
 
+-- [{path = mountpoint, fs = fs}]
 vfs.mounts = {}
 
 local function sortMountsCompare(mount1, mount2)
@@ -38,9 +39,17 @@ local function mountFromLuaFile(mountpoint, path, args)
 end
 
 function vfs.mountFromFile(mountpoint, path)
-	local handle = files.open(path)
-	local data = handle.read("a")
-	handle.close()
+	local data = nil
+	local normalized_path, fs = vfs.resolvePathFs(path)
+	if normalized_path == nil then
+		local handle = files.open(path)
+		data = handle.read("a")
+		handle.close()
+	else
+		local fd = fs.open(normalized_path, "r")
+		data = fs.read(fd, "a")
+		fs.close(fd)
+	end
 	local fsfile = load(data, path, nil, _G)()
 	mountFromLuaFile(mountpoint, fsfile[1], fsfile[2])
 end
