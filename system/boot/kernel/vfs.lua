@@ -14,12 +14,18 @@ local function sortMountsCompare(mount1, mount2)
 end
 
 function vfs.mount(mountpoint, fs)
+	if string.sub(mountpoint, -1) ~= "/" then
+		mountpoint = mountpoint .. "/"
+	end
 	table.insert(vfs.mounts, { path = mountpoint, fs = fs })
 	table.sort(vfs.mounts, sortMountsCompare)
 end
 
 -- returns the path to pass to the fs without leading or trailing slashes, and the fs
 function vfs.resolvePathFs(path)
+	if string.sub(path, -1) ~= "/" then
+		path = path .. "/"
+	end
 	for _, mount in ipairs(vfs.mounts) do
 		if string.sub(path, 1, #mount.path) == mount.path then
 			if string.sub(path, -1) == "/" then

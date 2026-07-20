@@ -89,7 +89,8 @@ return {
 	["open"] = function(pcb, request)
 		continue(pcb)
 		local normalized_path, fs = vfs.resolvePathFs(request.path)
-		return fs.open(normalized_path, request.mode)
+		local fd = fs.open(normalized_path, request.mode)
+		return fd
 	end,
 
 	["close"] = function(pcb, request)
