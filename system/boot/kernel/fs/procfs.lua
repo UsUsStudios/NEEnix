@@ -29,6 +29,8 @@ local properties = {
 			.. tostring(#pcb.waiters)
 			.. "\nChildren:     "
 			.. tostring(#pcb.children)
+			.. "\nOpen FDs:     "
+			.. tostring(#pcb.fds)
 			.. "\nSighandlers:  "
 			.. tostring(#pcb.sighandlers)
 		return str
@@ -62,6 +64,13 @@ local properties = {
 		local str = ""
 		for _, v in ipairs(pcb.children) do
 			str = str .. v
+		end
+		return str
+	end,
+	fds = function(pcb)
+		local str = ""
+		for fd, path in pairs(pcb.children) do
+			str = str .. fd .. ": " .. path
 		end
 		return str
 	end,

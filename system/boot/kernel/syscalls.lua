@@ -90,12 +90,14 @@ return {
 		continue(pcb)
 		local normalized_path, fs = vfs.resolvePathFs(request.path)
 		local fd = fs.open(normalized_path, request.mode)
+		pcb.fds[fd] = request.path
 		return fd
 	end,
 
 	["close"] = function(pcb, request)
 		continue(pcb)
 		local fd = vfs.fd_list[request.fd]
+		pcb.fds[request.fd] = nil
 		fd.fs.close(request.fd)
 	end,
 
