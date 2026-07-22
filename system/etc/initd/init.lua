@@ -28,5 +28,26 @@ local function inspectProcess(pid)
 	read("/proc/" .. pid .. "/sighandlers")
 end
 
---inspectProcess(1)
---inspectProcess(2)
+local function procfstest()
+	local function read(path)
+		local fd, err = coroutine.yield({ type = "open", path = path, mode = "r" })
+		if err then
+			print(fd, err)
+		end
+		print(path .. ": " .. coroutine.yield({ type = "read", fd = fd, count = "a" }))
+		coroutine.yield({ type = "close", fd = fd })
+	end
+
+	read("/proc/kernel/uptime")
+	read("/proc/kernel/schedulerticks")
+	read("/proc/kernel/scheduleryields")
+	read("/proc/kernel/version")
+	read("/proc/kernel/load")
+	read("/proc/kernel/ticktime")
+	read("/proc/kernel/mounts")
+end
+
+while true do
+	procfstest()
+	coroutine.yield({ type = "sleep", seconds = "0.05" })
+end

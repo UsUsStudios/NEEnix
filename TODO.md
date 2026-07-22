@@ -1,9 +1,11 @@
 # TODO
 
-- [ ] `procfs` kernel data
+- [x] `procfs` kernel data
+- [ ] stdlib
 - [ ] shell
 - [ ] `devfs`
   - [ ] disk device
+  - [ ] tty device
   - [ ] color display peripheral + screen device
   - [ ] simple display peripheral + headsup device
   - [ ] keyboard input device
@@ -12,7 +14,6 @@
   - [ ] redstone controller peripheral
   - [ ] dynamic light peripheral
 - [ ] internet syscalls API
-- [ ] stdlib
 - [ ] neato compatability layer
 
 ## Post-release

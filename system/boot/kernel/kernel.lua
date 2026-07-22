@@ -5,7 +5,10 @@ function _G.include(path)
 	return load(data, "system:/boot/kernel/" .. path, nil, _G)
 end
 
+_G.NEENIXVERSION = "v0.0.1"
+
 include("scheduler.lua")()
+include("vfs.lua")()
 
 scheduler.new_process(function()
 	coroutine.yield({ type = "mount", mountpoint = "/", fspath = "system:/boot/kernel/fs/rootfs" })

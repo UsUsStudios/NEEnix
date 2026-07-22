@@ -1,5 +1,3 @@
-local vfs = include("vfs.lua")()
-
 local SIGTERM = 1
 local SIGKILL = 2
 

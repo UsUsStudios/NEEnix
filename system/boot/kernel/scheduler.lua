@@ -4,6 +4,10 @@ local syscalls = include("syscalls.lua")(scheduler)
 
 scheduler.pid_counter = 0
 scheduler.processes = {}
+scheduler.ticks = 0
+scheduler.yields = 0
+scheduler.load = 0
+scheduler.ticktime = 0
 
 local function deep_copy(obj, seen)
 	if type(obj) ~= "table" then
@@ -36,6 +40,8 @@ function scheduler.create_env()
 	env.load = nil
 	env.debug = nil
 	env.scheduler = nil
+	env.vfs = nil
+	env.NEENIXVERSION = nil
 
 	return env
 end
@@ -64,6 +70,7 @@ function scheduler.new_process(fn, parent_pid)
 		sighandlers = {},
 		to_return = nil, -- return to the coroutine on next resume
 		error = nil, -- error message to return to coroutine on next resume
+		yields = 0, -- how many yields have been processed by the scheduler
 	}
 	scheduler.processes[pcb.pid] = pcb
 	if parent_pid and scheduler.processes[parent_pid] then
@@ -90,7 +97,9 @@ local function handle_syscall(pcb, req)
 end
 
 function scheduler.tick()
+	scheduler.ticks = scheduler.ticks + 1
 	local now = chip.getTime()
+
 	-- wake up sleeping processes
 	for pid, pcb in pairs(scheduler.processes) do
 		if pcb.state == "sleeping" and pcb.wake_at <= now then
@@ -100,11 +109,14 @@ function scheduler.tick()
 	end
 
 	local queue = run_queue
+	scheduler.load = #queue
 	run_queue = {}
 
 	for _, pid in ipairs(queue) do
 		local pcb = scheduler.processes[pid]
 		if pcb and pcb.state == "ready" then
+			scheduler.yields = scheduler.yields + 1
+			pcb.yields = pcb.yields + 1
 			pcb.state = "running"
 			local ok, req
 			if pcb.error ~= nil then
@@ -133,6 +145,7 @@ function scheduler.tick()
 			end
 		end
 	end
+	scheduler.ticktime = chip.getTime() - now
 end
 
 function scheduler.printProcesses()

@@ -4,7 +4,7 @@ local function create(fd_list, next_fd, partition, disk)
 	local fs = {}
 
 	function fs.stringrepr()
-		return "partfs: " .. 0 .. ":" .. partition
+		return "partfs - " .. 0 .. ":" .. partition
 	end
 
 	function fs.open(path, mode)

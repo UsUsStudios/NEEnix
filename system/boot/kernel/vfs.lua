@@ -1,4 +1,4 @@
-local vfs = {}
+_G.vfs = {}
 
 -- fd_list - key: fd, value: table
 --                     - must contain key "fs" with value of fs instance that owns fd
