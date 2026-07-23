@@ -6,13 +6,14 @@ function _G.include(path)
 end
 
 _G.NEENIXVERSION = "v0.0.1"
+_G.cwd = "/"
 
 include("scheduler.lua")()
 include("vfs.lua")()
 
 scheduler.new_process(function()
 	coroutine.yield({ type = "mount", mountpoint = "/", fspath = "system:/boot/kernel/fs/rootfs" })
-	coroutine.yield({ type = "spawn", path = "/etc/initd/init.lua" })
+	coroutine.yield({ type = "spawn", path = "/etc/initd/init.lua", cwd = "/hi" })
 end)
 
 while true do

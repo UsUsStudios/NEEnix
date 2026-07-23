@@ -62,6 +62,7 @@ return {
 	["spawn"] = function(pcb, request) -- spawn a new process executing a file
 		continue(pcb)
 		local env = request.env or scheduler.create_env()
+		env.cwd = request.cwd or _G.cwd
 		local normalized_path, fs = vfs.resolvePathFs(request.path)
 		local fd = fs.open(normalized_path, "r")
 		local fn = load(fs.read(fd, "a"), request.path, nil, env)
