@@ -11,10 +11,12 @@ _G.cwd = "/"
 include("scheduler.lua")()
 include("vfs.lua")()
 
-scheduler.new_process(function()
-	coroutine.yield({ type = "mount", mountpoint = "/", fspath = "system:/boot/kernel/fs/rootfs" })
-	coroutine.yield({ type = "spawn", path = "/etc/initd/init.lua", cwd = "/hi" })
-end)
+do
+	local handle = files.open("system:/etc/initd/init.lua")
+	local data = handle.read("a")
+	handle.close()
+	scheduler.new_process(load(data, "system:/etc/initd/init.lua", nil, scheduler.create_env()))
+end
 
 while true do
 	scheduler.tick()

@@ -1,3 +1,4 @@
+coroutine.yield({ type = "mount", mountpoint = "/", fspath = "system:/boot/kernel/fs/rootfs" })
 coroutine.yield({ type = "mount", mountpoint = "/proc", fspath = "system:/boot/kernel/fs/procfs" })
 
 local function inspectProcess(pid)
