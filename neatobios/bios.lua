@@ -17,6 +17,7 @@ local function deepCopy(obj, seen)
 	end
 	return copy
 end
+
 local font
 local _G_COPY
 
@@ -119,38 +120,34 @@ end
 local function init()
 	local options = { foreground = 0x2cd30eff }
 
-	-- load psf renderer
+	-- load files shim and psf renderer
 	do
-		local handle = files.open("neatobios:/common/psf.lua")
-		local data = handle.read("a")
-		handle.close()
-		font = load(data, "neatobios:/common/psf.lua")()("neatobios:/assets/Lat15-VGA16.psf")
-
-		fontHeight = font.getHeight()
-		fontWidth = font.getWidth()
-
-		font.drawLine(3, 3, "[NEATOBIOS] [INFO] Loaded psf renderer", options)
 		screen.draw()
-	end
+		_G_COPY = deepCopy(_G)
 
-	font.drawLine(3, 3 + fontHeight * 4, "[NEATOBIOS] [INFO] Copying _G", options)
-	screen.draw()
-	_G_COPY = deepCopy(_G)
-
-	-- Load jojotastic777's files shim and require
-	do
-		font.drawLine(3, 3 + fontHeight * 1, "[NEATOBIOS] [INFO] Loading files shim", options)
-		screen.draw()
 		local handle = files.open("neatobios:/common/files-shim.lua")
 		local data = handle.read("a")
 		handle.close()
-		load(data, "0:neatobios:/common/files-shim.lua")()
 
-		font.drawLine(3, 3 + fontHeight * 2, "[NEATOBIOS] [INFO] Loading require implementation", options)
+		load(data, "0:neatobios:/common/files-shim.lua")()
+		font = loadfile("0:neatobios:/common/psf.lua")()("0:neatobios:/assets/Lat15-VGA16.psf")
+
+		fontHeight = font.getHeight()
+		fontWidth = font.getWidth()
+	end
+	font.drawLine(3, 3 + fontHeight * 0, "[NEATOBIOS] [INFO] Copied _G", options)
+	font.drawLine(3, 3 + fontHeight * 1, "[NEATOBIOS] [INFO] Loaded files shim ", options)
+	screen.draw()
+	font.drawLine(3, 3 + fontHeight * 2, "[NEATOBIOS] [INFO] Loaded psf renderer", options)
+	screen.draw()
+
+	-- Load jojotastic777's files shim and require
+	do
+		font.drawLine(3, 3 + fontHeight * 3, "[NEATOBIOS] [INFO] Loading require implementation", options)
 		screen.draw()
 		loadfile("0:neatobios:/common/require.lua")()
 
-		font.drawLine(3, 3 + fontHeight * 3, "[NEATOBIOS] [INFO] Setting package.path", options)
+		font.drawLine(3, 3 + fontHeight * 4, "[NEATOBIOS] [INFO] Setting package.path", options)
 		screen.draw()
 		package.path = table.concat({ "0:neatobios:/common/?.lua", "0:neatobios:/?.lua" }, ";")
 	end
@@ -200,4 +197,5 @@ local function benchmark()
 end
 
 init()
+benchmark()
 main()

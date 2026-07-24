@@ -106,7 +106,7 @@ function files.open(improvedPath, mode)
 	return oldFiles.open(strippedPath, mode, disk)
 end
 
-function files.getChildren(improvedPath)
+function files.getChildrten(improvedPath)
 	local disk = path.getDisk(improvedPath)
 	local strippedPath = path.stripDisk(improvedPath)
 	return oldFiles.getChildren(strippedPath, disk)
