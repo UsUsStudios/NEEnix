@@ -2,7 +2,11 @@ function _G.include(path)
 	local handle = files.open("system:/boot/kernel/" .. path)
 	local data = handle.read("a")
 	handle.close()
-	return load(data, "system:/boot/kernel/" .. path, nil, _G)
+	local f, err = load(data, "system:/boot/kernel/" .. path, "t", _G)
+	if err then
+		error(err)
+	end
+	return f
 end
 
 _G.NEENIXVERSION = "v0.0.1"
