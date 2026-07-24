@@ -92,7 +92,7 @@ local kernelprop = {
 	status = function()
 		local str = "" .. "Uptime:             " .. tostring(chip.getTime()) .. "s" .. "\nScheduler Ticks:  " .. tostring(
 			scheduler.ticks
-		) .. " ticks" .. "\nScheduler Yields: " .. tostring(scheduler.yields) .. " yields" .. "NEEnix Version:    " .. _G.NEENIXVERSION .. "\nLua Version:     " .. (not table.move and rawlen and bit32) and "Lua 5.2" or "unkown Lua version" .. "\nLoad:            " .. tostring(
+		) .. " ticks" .. "\nScheduler Yields: " .. tostring(scheduler.yields) .. " yields" .. "NEEnix Version:    " .. _G.NEENIXVERSION .. "\nLua Version:     " .. not _VERSION and "unkown lua version, probably 5.2" or _VERSION .. "\nLoad:            " .. tostring(
 			scheduler.load
 		) .. " processes" .. "\nTick time:       " .. tostring(scheduler.ticktime) .. " seconds" .. "\nMounts:          " .. tostring(
 			#vfs.mounts
@@ -109,10 +109,10 @@ local kernelprop = {
 		return tostring(scheduler.yields)
 	end,
 	version = function()
-		if not table.move and rawlen and bit32 then
-			return "NEEnix " .. _G.NEENIXVERSION .. ", Lua 5.2"
+		if not _VERSION then
+			return "NEEnix " .. _G.NEENIXVERSION .. ", unkown Lua version, likely 5.2"
 		else
-			return "NEEnix " .. _G.NEENIXVERSION .. ", unknown Lua version"
+			return "NEEnix " .. _G.NEENIXVERSION .. ", " .. _VERSION
 		end
 	end,
 	load = function()
