@@ -77,6 +77,11 @@ function scheduler.new_process(fn, parent_pid)
 		error = nil, -- error message to return to coroutine on next resume
 		yields = 0, -- how many yields have been processed by the scheduler
 	}
+
+	debug.sethook(pcb.co, function()
+		print()
+		coroutine.yield()
+	end, "", 1500)
 	scheduler.processes[pcb.pid] = pcb
 	if parent_pid and scheduler.processes[parent_pid] then
 		table.insert(scheduler.processes[parent_pid].children, pcb.pid)
@@ -143,9 +148,10 @@ function scheduler.tick()
 				pcb.state = "zombie"
 				pcb.exit_code = -1
 			else
-				local syscall_ok, error = pcall(handle_syscall, pcb, req)
+				local syscall_ok, err = pcall(handle_syscall, pcb, req)
 				if not syscall_ok then
-					pcb.error = error
+					pcb.error = err
+					error(err)
 				end
 			end
 		end

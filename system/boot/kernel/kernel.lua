@@ -20,7 +20,11 @@ do
 	local data = handle.read("a")
 	handle.close()
 	local env = scheduler.create_env()
-	scheduler.new_process(load(data, "system:/etc/initd/init.lua", nil, env))
+	local fn, err = load(data, "system:/etc/initd/init.lua", nil, env)
+	if err then
+		error(err)
+	end
+	scheduler.new_process(fn)
 end
 
 while true do

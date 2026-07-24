@@ -62,7 +62,12 @@ function vfs.mountFromFile(mountpoint, path)
 		data = fs.read(fd, "a")
 		fs.close(fd)
 	end
-	local fsfile = load(data, path, nil, _G)()
+	local fsfileloader, err = load(data, path, nil, _G)
+	if err or not fsfileloader then
+		error(err)
+	end
+
+	local fsfile = fsfileloader()
 	mountFromLuaFile(mountpoint, fsfile[1], fsfile[2])
 end
 

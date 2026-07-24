@@ -1,6 +1,8 @@
 coroutine.yield({ type = "mount", mountpoint = "/", fspath = "system:/boot/kernel/fs/rootfs" })
 coroutine.yield({ type = "mount", mountpoint = "/proc", fspath = "system:/boot/kernel/fs/procfs" })
 
+function _G.print(...) end
+
 local function inspectProcess(pid)
 	print("Inspecting proccess " .. pid)
 	for _, file in ipairs(coroutine.yield({ type = "readdir", path = "/proc/" .. pid })) do
@@ -48,11 +50,8 @@ local function procfstest()
 	read("/proc/kernel/mounts")
 end
 
-for k, v in pairs(_G) do
-	print(k, v)
+while true do
+	procfstest()
+	inspectProcess(1)
+	coroutine.yield({ type = "sleep", seconds = "0.05" })
 end
-
---while true do
---	procfstest()
---	coroutine.yield({ type = "sleep", seconds = "0.05" })
---end
