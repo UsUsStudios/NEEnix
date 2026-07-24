@@ -89,15 +89,27 @@ local function launchBootOption(bootOption)
 	end
 
 	local args = bootOption["OS Args"]
-	local OS = loadfile(bootOption["OS Boot Path"], nil, env)
-	if args == nil then
-		OS()
-	elseif type(args) == "table" then
-		OS(table.unpack(args))
-	else
-		OS(args)
+	local OS, err = loadfile(bootOption["OS Boot Path"], nil, env)
+	if err then
+		font.drawLine(3, 3 + fontHeight * 1, err)
+		screen.draw()
+		for _ = 0, 10 do
+			coroutine.yield()
+		end
+		error(err)
+	elseif OS then
+		if args == nil then
+			OS()
+		elseif type(args) == "table" then
+			OS(table.unpack(args))
+		else
+			OS(args)
+		end
+		chip.shutdown()
 	end
-	chip.shutdown()
+	print("OS not available: " .. bootOption["OS Boot Path"])
+	font.drawLine(3, 3 + fontHeight * 1, "OS not available: " .. bootOption["OS Boot Path"])
+	screen.draw()
 end
 
 local function loadBootCfg()
@@ -197,5 +209,4 @@ local function benchmark()
 end
 
 init()
-benchmark()
 main()
