@@ -48,7 +48,11 @@ local function procfstest()
 	read("/proc/kernel/mounts")
 end
 
-while true do
-	procfstest()
-	coroutine.yield({ type = "sleep", seconds = "0.05" })
+for k, v in pairs(_G) do
+	print(k, v)
 end
+
+--while true do
+--	procfstest()
+--	coroutine.yield({ type = "sleep", seconds = "0.05" })
+--end

@@ -42,6 +42,10 @@ function scheduler.create_env()
 	env.scheduler = nil
 	env.vfs = nil
 	env.NEENIXVERSION = nil
+	env.files = nil
+	env.screen = nil
+	env.include = nil
+	env.package, env.require, env.loadfile = include("loadfile-require-shim.lua")()
 
 	return env
 end
