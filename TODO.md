@@ -2,7 +2,7 @@
 
 - [x] `procfs` kernel data
 - [ ] liblua
-  - [ ] file descriptor I/O, ch. 13
+  - [x] file descriptor I/O, ch. 13
   - [ ] file system I/O, ch. 14
   - [ ] sighandling, ch. 25
   - [ ] processes, ch. 26 and 27

@@ -1,7 +1,7 @@
 coroutine.yield({ type = "mount", mountpoint = "/", fspath = "system:/boot/kernel/fs/rootfs" })
 coroutine.yield({ type = "mount", mountpoint = "/proc", fspath = "system:/boot/kernel/fs/procfs" })
 
-function _G.print(...) end
+local unistd = require("unistd")
 
 local function inspectProcess(pid)
 	print("Inspecting proccess " .. pid)
@@ -50,8 +50,8 @@ local function procfstest()
 	read("/proc/kernel/mounts")
 end
 
-while true do
-	procfstest()
-	inspectProcess(1)
-	coroutine.yield({ type = "sleep", seconds = "0.05" })
-end
+--while true do
+--	procfstest()
+--	inspectProcess(1)
+--	coroutine.yield({ type = "sleep", seconds = "0.05" })
+--end

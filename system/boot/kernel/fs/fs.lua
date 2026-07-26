@@ -27,6 +27,10 @@ local function create(fd_list, next_fd)
 		return
 	end
 
+	function fs.fsync(fd)
+		return
+	end
+
 	function fs.mkdir(path)
 		return
 	end

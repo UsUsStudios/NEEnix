@@ -199,6 +199,10 @@ local function create(fd_list, next_fd)
 		error("cannot modify procfs")
 	end
 
+	function fs.fsync()
+		error("cannot modify procfs")
+	end
+
 	function fs.mkdir()
 		error("cannot modify procfs")
 	end

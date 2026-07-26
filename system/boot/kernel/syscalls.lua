@@ -118,6 +118,12 @@ return {
 		fd.fs.write(request.fd, request.buffer)
 	end,
 
+	["fsync"] = function(pcb, request)
+		continueproc(pcb)
+		local fd = vfs.fd_list[request.fd]
+		fd.fs.fsync(request.fd, request.buffer)
+	end,
+
 	["mkdir"] = function(pcb, request)
 		continueproc(pcb)
 		local normalized_path, fs = vfs.resolvePathFs(request.path)

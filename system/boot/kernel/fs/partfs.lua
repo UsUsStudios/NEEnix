@@ -38,6 +38,10 @@ local function create(fd_list, next_fd, partition, disk)
 		fd_list[fd].handle.write(buffer)
 	end
 
+	function fs.fsync(fd)
+		fd_list[fd].handle.flush()
+	end
+
 	function fs.mkdir(path)
 		files.makeDir(partition .. ":/" .. path, disk)
 	end

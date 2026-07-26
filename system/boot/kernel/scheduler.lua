@@ -157,7 +157,6 @@ function scheduler.tick()
 				local syscall_ok, err = pcall(handle_syscall, pcb, req)
 				if not syscall_ok then
 					pcb.error = err
-					error(err)
 				end
 			end
 		end
