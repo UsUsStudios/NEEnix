@@ -1,8 +1,8 @@
-function _G.include(path)
+function _G.include(path, env)
 	local handle = files.open("system:/boot/kernel/" .. path)
 	local data = handle.read("a")
 	handle.close()
-	local f, err = load(data, "system:/boot/kernel/" .. path, nil, _G)
+	local f, err = load(data, "system:/boot/kernel/" .. path, nil, env or _G)
 	if err then
 		error(err)
 	end
@@ -20,7 +20,7 @@ do
 	local data = handle.read("a")
 	handle.close()
 	local env = scheduler.create_env()
-	local fn, err = load(data, "system:/etc/initd/init.lua", nil, env)
+	local fn, err = load(data, "/etc/initd/init.lua", nil, env)
 	if err then
 		error(err)
 	end

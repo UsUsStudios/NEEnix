@@ -86,7 +86,8 @@ end
 function shim.loadfile(filename, mode, environment)
 	local fd, err = coroutine.yield({ type = "open", path = filename, mode = "r" })
 	if err then
-		return error(err)
+		error(err)
+		return nil
 	end
 
 	local data = coroutine.yield({ type = "read", fd = fd, count = "a" })
@@ -111,7 +112,8 @@ package.searchers = {
 			return err
 		end
 
-		return shim.loadfile(filename), filename
+		local loader = shim.loadfile(filename)
+		return loader, filename
 	end,
 
 	-- the third and fourth searchers aren't relevant, since they're for

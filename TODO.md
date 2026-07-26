@@ -5,7 +5,7 @@
   - [ ] file descriptor I/O, ch. 13
   - [ ] file system I/O, ch. 14
   - [ ] sighandling, ch. 25
-  - [ ] processes, ch. 27
+  - [ ] processes, ch. 26 and 27
   - [ ] system management and config, ch. 32 and 33
   - [ ] date and time, ch. 22
   - [ ] math, ch. 19 and 20

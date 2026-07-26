@@ -1,6 +1,7 @@
 _G.scheduler = {}
 
 local syscalls = include("syscalls.lua")(scheduler)
+local wrap_process = include("errors.lua")()
 
 scheduler.pid_counter = 0
 scheduler.processes = {}
@@ -37,7 +38,6 @@ function scheduler.create_env()
 	env.io = nil
 	env.internet = nil
 	env.crypto = nil
-	env.load = nil
 	env.debug = nil
 	env.scheduler = nil
 	env.vfs = nil
@@ -46,7 +46,8 @@ function scheduler.create_env()
 	env.screen = nil
 	env.include = nil
 	env._VERSION = nil
-	env.package, env.require, env.loadfile = include("loadfile-require-shim.lua")()
+
+	env.package, env.require, env.loadfile = include("loadfile-require.lua", env)()
 
 	return env
 end
@@ -65,7 +66,9 @@ function scheduler.new_process(fn, parent_pid)
 	local pcb = {
 		pid = scheduler.pid_counter,
 		ppid = parent_pid,
-		co = coroutine.create(fn),
+		co = coroutine.create(function()
+			wrap_process(fn)
+		end),
 		state = "ready", -- ready | running | sleeping | blocked | zombie | dead
 		wake_at = nil, -- for sleeping
 		exit_code = nil,
@@ -79,7 +82,6 @@ function scheduler.new_process(fn, parent_pid)
 	}
 
 	debug.sethook(pcb.co, function()
-		print()
 		coroutine.yield()
 	end, "", 1500)
 	scheduler.processes[pcb.pid] = pcb
@@ -138,7 +140,11 @@ function scheduler.tick()
 
 			if coroutine.status(pcb.co) == "dead" then
 				pcb.state = "zombie"
-				pcb.exit_code = ok and (req or 0) or -1
+				pcb.exit_code = pcb.exit_code or 0
+				print("Process with PID " .. pcb.pid .. " ended with exit code " .. pcb.exit_code)
+				if type(req) ~= "table" then
+					print(req)
+				end
 				for _, wpid in ipairs(pcb.waiters) do
 					scheduler.processes[wpid].state = "ready"
 					scheduler.enqueue(wpid)
