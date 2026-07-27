@@ -4,7 +4,11 @@ _G.vfs = {}
 --                     - must contain key "fs" with value of fs instance that owns fd
 --                     - rest of table is up to fs to define
 vfs.fd_list = {}
-local next_fd = { 0 }
+local next_fd_num = 0
+local function next_fd()
+	next_fd_num += 1
+	return next_fd_num
+end
 
 -- [{path = mountpoint, fs = fs}]
 vfs.mounts = {}

@@ -154,15 +154,15 @@ local function create(fd_list, next_fd)
 
 		local pcb, property = findMatchingProcess(path)
 
-		fd_list[next_fd[1]] = {
+		local fd = next_fd()
+		fd_list[fd] = {
 			fs = fs,
 			pcb = pcb,
 			property = property,
 			offset = 0,
 			buffer = generateBuffer(pcb, property),
 		}
-		next_fd[1] = next_fd[1] + 1
-		return next_fd[1] - 1
+		return fd
 	end
 
 	function fs.close(fd)
