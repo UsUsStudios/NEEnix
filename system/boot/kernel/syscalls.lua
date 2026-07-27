@@ -32,8 +32,9 @@ return {
 	end,
 
 	["exit"] = function(pcb, request) -- end the execution of this process
-		pcb.state = "dead"
+		pcb.state = "zombie"
 		pcb.exit_code = request.code
+		print("Process with PID " .. pcb.pid .. " ended with exit code " .. pcb.exit_code)
 	end,
 
 	["kill"] = function(pcb, request) -- send a signal to the process
@@ -59,7 +60,19 @@ return {
 		end
 	end,
 
-	["spawn"] = function(pcb, request) -- spawn a new process executing a file
+	["spawn"] = function(pcb, request) -- spawn a new process executing a folder
+		continueproc(pcb)
+
+		if request.args then
+			scheduler.new_process(function()
+				request.fn(table.unpack(request.args))
+			end, pcb.pid)
+		else
+			scheduler.new_process(request.fn, pcb.pid)
+		end
+	end,
+
+	["exec"] = function(pcb, request) -- spawn a new process executing a file
 		continueproc(pcb)
 		local env = request.env or scheduler.create_env()
 		env.cwd = request.cwd or _G.cwd

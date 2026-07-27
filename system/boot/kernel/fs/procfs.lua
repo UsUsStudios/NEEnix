@@ -196,19 +196,19 @@ local function create(fd_list, next_fd)
 	end
 
 	function fs.write()
-		error("cannot modify procfs")
+		error("invalid operation on " .. fs.stringrepr())
 	end
 
 	function fs.fsync()
-		error("cannot modify procfs")
+		error("invalid operation on " .. fs.stringrepr())
 	end
 
 	function fs.mkdir()
-		error("cannot modify procfs")
+		error("invalid operation on " .. fs.stringrepr())
 	end
 
 	function fs.unlink()
-		error("cannot modify procfs")
+		error("invalid operation on " .. fs.stringrepr())
 	end
 
 	function fs.readdir(path)

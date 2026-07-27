@@ -81,6 +81,9 @@ function unistd.read(fd, count)
 end
 
 function unistd.write(fd, buffer)
+	if type(buffer) ~= "string" then
+		error("cannot write anything but string to file")
+	end
 	local _, err = coroutine.yield({ type = "write", fd = fd, buffer = buffer })
 	if err then
 		error(err, 2)
@@ -110,6 +113,10 @@ function unistd.lseek(fd, offset, whence)
 		error(err, 2)
 	end
 	return location
+end
+
+function unistd.pipe()
+	return table.unpack(unistd.open("/dev/popen", 1))
 end
 
 return unistd

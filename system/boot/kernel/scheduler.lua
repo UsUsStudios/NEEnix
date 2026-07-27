@@ -155,8 +155,8 @@ function scheduler.tick()
 				pcb.exit_code = -1
 			else
 				local syscall_ok, err = pcall(handle_syscall, pcb, req)
-				if not syscall_ok then
-					pcb.error = err
+				if not syscall_ok and err then
+					pcb.error = err:match("^.*:%d+:%s*(.*)$")
 				end
 			end
 		end

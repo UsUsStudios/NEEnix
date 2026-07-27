@@ -8,9 +8,12 @@ local function create(fd_list, next_fd, partition, disk)
 	end
 
 	function fs.open(path, mode)
+		if not files.exists(partition .. ":/" .. path, disk) then
+			return error("file does not exist")
+		end
 		local handle = files.open(partition .. ":/" .. path, mode, disk)
-		if handle == nil then
-			error("file handle is nil")
+		if not handle then
+			return error("file handle is nil")
 		end
 		local fd = next_fd()
 		fd_list[fd] = {

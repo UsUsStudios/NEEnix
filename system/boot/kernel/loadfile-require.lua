@@ -86,7 +86,7 @@ end
 function shim.loadfile(filename, mode, environment)
 	local fd, err = coroutine.yield({ type = "open", path = filename, mode = "r" })
 	if err then
-		error(err)
+		error(err, 2)
 		return nil
 	end
 
@@ -142,7 +142,7 @@ function shim.require(modname)
 	end
 
 	-- if no searcher retuns a loader, raise an error.
-	return error(string.format("could not find module: %q", modname))
+	return error(string.format("could not find module: %q", modname), 2)
 end
 
 return package, shim.require, shim.loadfile
