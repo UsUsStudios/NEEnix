@@ -40,8 +40,8 @@ local function create(fd_list, next_fd)
 		end
 		local inputbuf = fd_list[outputfd.input].buffer
 		if #inputbuf > 0 then
-			local data = inputbuf[#inputbuf]
-			inputbuf[#inputbuf] = nil -- delete the top of the stack
+			local data = inputbuf[1]
+			table.remove(inputbuf, 1)
 			return data
 		end
 		return "\0"
