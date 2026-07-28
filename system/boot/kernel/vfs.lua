@@ -47,7 +47,7 @@ local function mountFromLuaFile(mountpoint, path, args)
 	vfs.mount(mountpoint, fs)
 end
 
-function vfs.mountFromFile(mountpoint, path)
+function vfs.mountFromFile(pcb, mountpoint, path)
 	local data
 	local normalized_path, fs = vfs.resolvePathFs(path)
 	if not normalized_path then
@@ -58,9 +58,9 @@ function vfs.mountFromFile(mountpoint, path)
 		data = handle.read("a")
 		handle.close()
 	else
-		local fd = fs.open(normalized_path, "r")
-		data = fs.read(fd, "a")
-		fs.close(fd)
+		local fd = fs.open(pcb, normalized_path, "r")
+		data = fs.read(pcb, fd, "a")
+		fs.close(pcb, fd)
 	end
 	local fsfileloader, err = load(data, path, nil, _G)
 	if err or not fsfileloader then
