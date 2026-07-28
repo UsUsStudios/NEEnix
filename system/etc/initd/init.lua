@@ -3,10 +3,6 @@ coroutine.yield({ type = "mount", mountpoint = "/proc", fspath = "/boot/kernel/f
 coroutine.yield({ type = "mount", mountpoint = "/dev/popen", fspath = "/boot/kernel/fs/pipefs" })
 
 local unistd = require("unistd")
-local ifd, ofd = unistd.pipe()
-unistd.write(ifd, "1")
-unistd.write(ifd, "2")
-print(unistd.read(ofd))
-unistd.write(ifd, "3")
-print(unistd.read(ofd))
-print(unistd.read(ofd))
+for _, v in ipairs(coroutine.yield({ type = "readdir", path = "/proc" })) do
+	print(v)
+end

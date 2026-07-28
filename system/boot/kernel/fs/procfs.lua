@@ -147,17 +147,17 @@ local function create(next_fd)
 		return "procfs"
 	end
 
-	function fs.open(path, mode)
+	function fs.open(pcb, path, mode)
 		if string.match(mode, "w") or string.match(mode, "a") or string.match(mode, "+") then
 			error("cannot modify procfs")
 		end
 
-		local pcb, property = findMatchingProcess(path)
+		local pathpcb, property = findMatchingProcess(path)
 
 		local fd = next_fd()
 		pcb.fds[fd] = {
 			fs = fs,
-			pcb = pcb,
+			pcb = pathpcb,
 			property = property,
 			offset = 0,
 			buffer = generateBuffer(pcb, property),
@@ -165,21 +165,21 @@ local function create(next_fd)
 		return fd
 	end
 
-	function fs.close(fd)
+	function fs.close(pcb, fd)
 		pcb.fds[fd] = nil
 	end
 
-	function fs.read(fd, count)
+	function fs.read(pcb, fd, count)
 		if pcb.fds[fd].offset == 0 then
-			pcb.fds[fd].buffer = generateBuffer(fd_list[fd].pcb, fd_list[fd].property)
+			pcb.fds[fd].buffer = generateBuffer(pcb.fds[fd].pcb, pcb.fds[fd].property)
 		end
 
 		if count == "a" then
 			count = #pcb.fds[fd].buffer
 		end
-		pcb.fds[fd].offset = fd_list[fd].offset + count
+		pcb.fds[fd].offset = pcb.fds[fd].offset + count
 
-		return string.sub(pcb.fds[fd].buffer, fd_list[fd].offset - count, fd_list[fd].offset)
+		return string.sub(pcb.fds[fd].buffer, pcb.fds[fd].offset - count, pcb.fds[fd].offset)
 	end
 
 	function fs.lseek(fd, offset, whence)
@@ -211,11 +211,12 @@ local function create(next_fd)
 		error("invalid operation on " .. fs.stringrepr())
 	end
 
-	function fs.readdir(path)
+	function fs.readdir(_, path)
 		local pcb, property = findMatchingProcess(path)
 		local dirlist = {}
 		if pcb == nil then
 			table.insert(dirlist, "kernel")
+			table.insert(dirlist, "self")
 			for pid, _ in pairs(scheduler.processes) do
 				table.insert(dirlist, tostring(pid))
 			end
