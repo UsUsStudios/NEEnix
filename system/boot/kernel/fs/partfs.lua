@@ -1,13 +1,13 @@
 -- Filesystem for an arbitrary partition on an arbitrary disk
 
-local function create(fd_list, next_fd, partition, disk)
+local function create(next_fd, partition, disk)
 	local fs = {}
 
 	function fs.stringrepr()
 		return "partfs - " .. 0 .. ":" .. partition
 	end
 
-	function fs.open(path, mode)
+	function fs.open(pcb, path, mode)
 		if not files.exists(partition .. ":/" .. path, disk) then
 			return error("file does not exist")
 		end
@@ -16,44 +16,44 @@ local function create(fd_list, next_fd, partition, disk)
 			return error("file handle is nil")
 		end
 		local fd = next_fd()
-		fd_list[fd] = {
+		pcb.fds[fd] = {
 			fs = fs,
 			handle = handle,
 		}
 		return fd
 	end
 
-	function fs.close(fd)
-		fd_list[fd].handle.flush()
-		fd_list[fd].handle.close()
-		fd_list[fd] = nil
+	function fs.close(pcb, fd)
+		pcb.fds[fd].handle.flush()
+		pcb.fds[fd].handle.close()
+		pcb.fds[fd] = nil
 	end
 
-	function fs.read(fd, count)
-		return fd_list[fd].handle.read(count)
+	function fs.read(pcb, fd, count)
+		return pcb.fds[fd].handle.read(count)
 	end
 
-	function fs.lseek(fd, offset, whence)
-		return fd_list[fd].handle.seek(whence, offset)
+	function fs.lseek(pcb, fd, offset, whence)
+		return pcb.fds[fd].handle.seek(whence, offset)
 	end
 
-	function fs.write(fd, buffer)
-		fd_list[fd].handle.write(buffer)
+	function fs.write(pcb, fd, buffer)
+		pcb.fds[fd].handle.write(buffer)
 	end
 
-	function fs.fsync(fd)
-		fd_list[fd].handle.flush()
+	function fs.fsync(pcb, fd)
+		pcb.fds[fd].handle.flush()
 	end
 
-	function fs.mkdir(path)
+	function fs.mkdir(pcb, path)
 		files.makeDir(partition .. ":/" .. path, disk)
 	end
 
-	function fs.unlink(path)
+	function fs.unlink(pcb, path)
 		files.delete(partition .. ":/" .. path, disk)
 	end
 
-	function fs.readdir(path)
+	function fs.readdir(pcb, path)
 		return files.getChildren(partition .. ":/" .. path, disk)
 	end
 

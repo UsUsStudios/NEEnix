@@ -102,38 +102,36 @@ return {
 		continueproc(pcb)
 		local normalized_path, fs = vfs.resolvePathFs(request.path)
 		local fd = fs.open(normalized_path, request.mode)
-		pcb.fds[fd] = request.path
 		return fd
 	end,
 
 	["close"] = function(pcb, request)
 		continueproc(pcb)
-		local fd = vfs.fd_list[request.fd]
-		pcb.fds[request.fd] = nil
+		local fd = pcb.fds[request.fd]
 		fd.fs.close(request.fd)
 	end,
 
 	["read"] = function(pcb, request)
 		continueproc(pcb)
-		local fd = vfs.fd_list[request.fd]
+		local fd = pcb.fds[request.fd]
 		return fd.fs.read(request.fd, request.count)
 	end,
 
 	["lseek"] = function(pcb, request)
 		continueproc(pcb)
-		local fd = vfs.fd_list[request.fd]
+		local fd = pcb.fds[request.fd]
 		return fd.fs.lseek(request.fd, request.offset, request.whence)
 	end,
 
 	["write"] = function(pcb, request)
 		continueproc(pcb)
-		local fd = vfs.fd_list[request.fd]
+		local fd = pcb.fds[request.fd]
 		fd.fs.write(request.fd, request.buffer)
 	end,
 
 	["fsync"] = function(pcb, request)
 		continueproc(pcb)
-		local fd = vfs.fd_list[request.fd]
+		local fd = pcb.fds[request.fd]
 		fd.fs.fsync(request.fd, request.buffer)
 	end,
 

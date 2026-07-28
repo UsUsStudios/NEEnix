@@ -140,7 +140,7 @@ local function generateBuffer(pcb, property)
 	return properties[property](pcb)
 end
 
-local function create(fd_list, next_fd)
+local function create(next_fd)
 	local fs = {}
 
 	function fs.stringrepr()
@@ -155,7 +155,7 @@ local function create(fd_list, next_fd)
 		local pcb, property = findMatchingProcess(path)
 
 		local fd = next_fd()
-		fd_list[fd] = {
+		pcb.fds[fd] = {
 			fs = fs,
 			pcb = pcb,
 			property = property,
@@ -166,20 +166,20 @@ local function create(fd_list, next_fd)
 	end
 
 	function fs.close(fd)
-		fd_list[fd] = nil
+		pcb.fds[fd] = nil
 	end
 
 	function fs.read(fd, count)
-		if fd_list[fd].offset == 0 then
-			fd_list[fd].buffer = generateBuffer(fd_list[fd].pcb, fd_list[fd].property)
+		if pcb.fds[fd].offset == 0 then
+			pcb.fds[fd].buffer = generateBuffer(fd_list[fd].pcb, fd_list[fd].property)
 		end
 
 		if count == "a" then
-			count = #fd_list[fd].buffer
+			count = #pcb.fds[fd].buffer
 		end
-		fd_list[fd].offset = fd_list[fd].offset + count
+		pcb.fds[fd].offset = fd_list[fd].offset + count
 
-		return string.sub(fd_list[fd].buffer, fd_list[fd].offset - count, fd_list[fd].offset)
+		return string.sub(pcb.fds[fd].buffer, fd_list[fd].offset - count, fd_list[fd].offset)
 	end
 
 	function fs.lseek(fd, offset, whence)

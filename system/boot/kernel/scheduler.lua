@@ -74,7 +74,10 @@ function scheduler.new_process(fn, parent_pid)
 		exit_code = nil,
 		waiters = {}, -- pids blocked in wait() on this pid
 		children = {},
-		fds = {}, -- your open file table
+		-- fds: open file table - key: fd, value: table
+		--                     - must contain key "fs" with value of fs instance that owns fd
+		--                     - rest of table is up to fs to define
+		fds = {},
 		sighandlers = {},
 		to_return = nil, -- return to the coroutine on next resume
 		error = nil, -- error message to return to coroutine on next resume

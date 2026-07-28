@@ -1,45 +1,45 @@
 -- The function signatures for any fs implementation
 
-local function create(fd_list, next_fd)
+local function create(get_fd)
 	local fs = {}
 
 	function fs.stringrepr()
 		return
 	end
 
-	function fs.open(path, mode)
+	function fs.open(pcb, path, mode)
 		return
 	end
 
-	function fs.close(fd)
+	function fs.close(pcb, fd)
 		return
 	end
 
-	function fs.read(fd, count)
+	function fs.read(pcb, fd, count)
 		return
 	end
 
-	function fs.lseek(fd, offset, whence)
+	function fs.lseek(pcb, fd, offset, whence)
 		return
 	end
 
-	function fs.write(fd, buffer)
+	function fs.write(pcb, fd, buffer)
 		return
 	end
 
-	function fs.fsync(fd)
+	function fs.fsync(pcb, fd)
 		return
 	end
 
-	function fs.mkdir(path)
+	function fs.mkdir(pcb, path)
 		return
 	end
 
-	function fs.unlink(path)
+	function fs.unlink(pcb, path)
 		return
 	end
 
-	function fs.readdir(path)
+	function fs.readdir(pcb, path)
 		return
 	end
 

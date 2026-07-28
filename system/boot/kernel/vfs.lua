@@ -1,9 +1,5 @@
 _G.vfs = {}
 
--- fd_list - key: fd, value: table
---                     - must contain key "fs" with value of fs instance that owns fd
---                     - rest of table is up to fs to define
-vfs.fd_list = {}
 local next_fd_num = 0
 local function next_fd()
 	next_fd_num += 1
@@ -47,7 +43,7 @@ local function mountFromLuaFile(mountpoint, path, args)
 	end
 	local data = handle.read("a")
 	handle.close()
-	local fs = load(data, path, nil, _G)()(vfs.fd_list, next_fd, table.unpack(args))
+	local fs = load(data, path, nil, _G)()(next_fd, table.unpack(args))
 	vfs.mount(mountpoint, fs)
 end
 
@@ -68,7 +64,6 @@ function vfs.mountFromFile(mountpoint, path)
 	end
 	local fsfileloader, err = load(data, path, nil, _G)
 	if err or not fsfileloader then
-		print(err, fsfileloader)
 		error(err)
 	end
 

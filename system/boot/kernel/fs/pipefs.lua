@@ -1,25 +1,25 @@
 -- The filesystem for /dev/popen, for opening pipes
 
-local function create(fd_list, next_fd)
+local function create(next_fd)
 	local fs = {}
 
 	function fs.stringrepr()
 		return "pipefs"
 	end
 
-	function fs.open(path)
+	function fs.open(pcb, path)
 		if path ~= "" then
 			error("file does not exist")
 		end
 		local input = next_fd()
 		local output = next_fd()
-		fd_list[input] = {
+		pcb.fds[input] = {
 			fs = fs,
 			buffer = {},
 			output = output,
 			closed = false,
 		}
-		fd_list[output] = {
+		pcb.fds[output] = {
 			fs = fs,
 			input = input,
 			closed = false,
@@ -27,18 +27,18 @@ local function create(fd_list, next_fd)
 		return { input, output }
 	end
 
-	function fs.close(fd)
-		fd_list[fd].closed = true
+	function fs.close(pcb, fd)
+		pcb.fds[fd].closed = true
 	end
 
-	function fs.read(fd)
-		local outputfd = fd_list[fd]
+	function fs.read(pcb, fd)
+		local outputfd = pcb.fds[fd]
 		if outputfd.buffer then -- it's an input fd
 			return error("can't read from an input file descriptor")
-		elseif fd_list[outputfd.input].closed then
+		elseif pcb.fds[outputfd.input].closed then
 			return error("other end of pipe is closed")
 		end
-		local inputbuf = fd_list[outputfd.input].buffer
+		local inputbuf = pcb.fds[outputfd.input].buffer
 		if #inputbuf > 0 then
 			local data = inputbuf[1]
 			table.remove(inputbuf, 1)
@@ -47,33 +47,33 @@ local function create(fd_list, next_fd)
 		return "\0"
 	end
 
-	function fs.lseek()
+	function fs.lseek(pcb)
 		error("invalid operation on " .. fs.stringrepr())
 	end
 
-	function fs.write(fd, buffer)
-		local inputfd = fd_list[fd]
+	function fs.write(pcb, fd, buffer)
+		local inputfd = pcb.fds[fd]
 		if inputfd.input then -- it's an output fd
 			return error("can't write to an output file descriptor")
-		elseif fd_list[inputfd.output].closed then
+		elseif pcb.fds[inputfd.output].closed then
 			return error("other end of pipe is closed")
 		end
 		table.insert(inputfd.buffer, buffer)
 	end
 
-	function fs.fsync()
+	function fs.fsync(pcb)
 		error("invalid operation on " .. fs.stringrepr())
 	end
 
-	function fs.mkdir()
+	function fs.mkdir(pcb)
 		error("invalid operation on " .. fs.stringrepr())
 	end
 
-	function fs.unlink()
+	function fs.unlink(pcb)
 		error("invalid operation on " .. fs.stringrepr())
 	end
 
-	function fs.readdir()
+	function fs.readdir(pcb)
 		error("invalid operation on " .. fs.stringrepr())
 	end
 
