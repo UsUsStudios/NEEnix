@@ -35,6 +35,8 @@ local function create(next_fd)
 		local outputfd = pcb.fds[fd]
 		if outputfd.buffer then -- it's an input fd
 			return error("can't read from an input file descriptor")
+		elseif outputfd.closed then
+			return error("can't read from closed pipe")
 		elseif pcb.fds[outputfd.input].closed then
 			return error("other end of pipe is closed")
 		end
@@ -53,8 +55,11 @@ local function create(next_fd)
 
 	function fs.write(pcb, fd, buffer)
 		local inputfd = pcb.fds[fd]
+		print(buffer)
 		if inputfd.input then -- it's an output fd
 			return error("can't write to an output file descriptor")
+		elseif inputfd.closed then
+			return error("can't write to closed pipe")
 		elseif pcb.fds[inputfd.output].closed then
 			return error("other end of pipe is closed")
 		end

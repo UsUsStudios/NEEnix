@@ -47,6 +47,30 @@ function scheduler.create_env()
 	env.include = nil
 	env._VERSION = nil
 
+	function env.print(...)
+		local str = ""
+		if type(...) == "table" then
+			for _, v in ipairs(...) do
+				str = str .. tostring(v) .. "\t"
+			end
+		else
+			str = tostring(...)
+		end
+		local _, err = coroutine.yield({ type = "write", fd = 1, buffer = str .. "\n" }) -- write to the fd of STDOUT
+	end
+
+	function env.printerr(...)
+		local str = ""
+		if type(...) == "table" then
+			for _, v in ipairs(...) do
+				str = str .. tostring(v) .. "\t"
+			end
+		else
+			str = tostring(...)
+		end
+		local _, err = coroutine.yield({ type = "write", fd = 2, buffer = str .. "\n" }) -- write to the fd of STDOUT
+	end
+
 	env.package, env.require, env.loadfile = include("loadfile-require.lua", env)()
 
 	return env
@@ -57,7 +81,7 @@ function scheduler.enqueue(pid)
 	table.insert(run_queue, pid)
 end
 
-function scheduler.new_process(fn, parent_pid)
+function scheduler.new_process(fn, parent_pid, fds)
 	if fn == nil then
 		error("cannot start process with function nil")
 	end
@@ -77,7 +101,7 @@ function scheduler.new_process(fn, parent_pid)
 		-- fds: open file table - key: fd, value: table
 		--                     - must contain key "fs" with value of fs instance that owns fd
 		--                     - rest of table is up to fs to define
-		fds = {},
+		fds = fds or {},
 		sighandlers = {},
 		to_return = nil, -- return to the coroutine on next resume
 		error = nil, -- error message to return to coroutine on next resume
@@ -158,8 +182,9 @@ function scheduler.tick()
 				pcb.exit_code = -1
 			else
 				local syscall_ok, err = pcall(handle_syscall, pcb, req)
+				-- err = err:match("^.*:%d+:%s*(.*)$")
 				if not syscall_ok and err then
-					pcb.error = err:match("^.*:%d+:%s*(.*)$")
+					pcb.error = err
 				end
 			end
 		end

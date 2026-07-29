@@ -64,35 +64,36 @@ end
 function calls.spawn(pcb, request) -- spawn a new process executing a function
 	continueproc(pcb)
 
+	-- inherit STDIN, STDOUT and STDERR
+	local fds = {
+		[0] = pcb.fds[request.stdin] or pcb.fds[0],
+		[1] = pcb.fds[request.stdout] or pcb.fds[1],
+		[2] = pcb.fds[request.stderr] or pcb.fds[2],
+	}
+
 	if request.args then
 		scheduler.new_process(function()
 			request.fn(table.unpack(request.args))
-		end, pcb.pid)
+		end, pcb.pid, fds)
 	else
-		scheduler.new_process(request.fn, pcb.pid)
+		scheduler.new_process(request.fn, pcb.pid, fds)
 	end
 end
 
 function calls.exec(pcb, request) -- spawn a new process executing a file
-	continueproc(pcb)
 	local env = request.env or scheduler.create_env()
 	env.cwd = request.cwd or _G.cwd
 	local normalized_path, fs = vfs.resolvePathFs(request.path)
-	local fd = fs.open(normalized_path, "r")
-	local fn = load(fs.read(fd, "a"), request.path, nil, env)
+	local fd = fs.open(pcb, normalized_path, "r")
+	local fn = load(fs.read(pcb, fd, "a"), request.path, nil, env)
 	if fn == nil then
 		error("function loaded from file invalid")
 	end
 
-	fs.close(fd)
+	fs.close(pcb, fd)
 
-	if request.args then
-		scheduler.new_process(function()
-			fn(table.unpack(request.args))
-		end, pcb.pid)
-	else
-		scheduler.new_process(fn, pcb.pid)
-	end
+	request.fn = fn -- to pass onto calls.spawn
+	calls.spawn(pcb, request)
 end
 
 ------------------------------------------------------------------------------------
@@ -126,7 +127,8 @@ end
 function calls.write(pcb, request)
 	continueproc(pcb)
 	local fd = pcb.fds[request.fd]
-	fd.fs.write(pcb, request.fd, request.buffer)
+	print(fd.fs.stringrepr())
+	return fd.fs.write(pcb, request.fd, request.buffer)
 end
 
 function calls.fsync(pcb, request)
