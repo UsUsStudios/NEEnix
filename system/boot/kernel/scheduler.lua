@@ -56,19 +56,10 @@ function scheduler.create_env()
 		else
 			str = tostring(...)
 		end
-		local _, err = coroutine.yield({ type = "write", fd = 1, buffer = str .. "\n" }) -- write to the fd of STDOUT
-	end
-
-	function env.printerr(...)
-		local str = ""
-		if type(...) == "table" then
-			for _, v in ipairs(...) do
-				str = str .. tostring(v) .. "\t"
-			end
-		else
-			str = tostring(...)
+		local _, err = coroutine.yield({ type = "write", fd = 1, buffer = str }) -- write to the fd of STDOUT
+		if err then
+			error(err)
 		end
-		local _, err = coroutine.yield({ type = "write", fd = 2, buffer = str .. "\n" }) -- write to the fd of STDOUT
 	end
 
 	env.package, env.require, env.loadfile = include("loadfile-require.lua", env)()

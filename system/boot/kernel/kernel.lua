@@ -34,7 +34,7 @@ local function pid1()
 	local stdout_in, stdout_out = table.unpack(pipefds)
 	pipefds, err = coroutine.yield({ type = "open", path = "/dev/popen" })
 	if err then
-		print(err)
+		error(err)
 	end
 	local stderr_in, stderr_out = table.unpack(pipefds)
 
@@ -42,25 +42,23 @@ local function pid1()
 
 	while true do
 		local stdout_data, err1 = coroutine.yield({ type = "read", fd = stdout_out })
-		if err1 then
-			print(err1)
-		end
 		local stderr_data, err2 = coroutine.yield({ type = "read", fd = stderr_out })
+		if err1 then
+			error(err1)
+		end
 		if err2 then
-			print(err2)
+			error(err2)
 		end
 		if stdout_data ~= "\0" then
-			print(stdout_data:sub(1, #stdout_data - 1))
+			print(stdout_data)
 		end
 		if stderr_data ~= "\0" then
-			print(stderr_data:sub(1, #stderr_data - 1))
+			print(stderr_data)
 		end
 	end
 end
 
-do
-	scheduler.new_process(pid1)
-end
+scheduler.new_process(pid1)
 
 while true do
 	scheduler.tick()

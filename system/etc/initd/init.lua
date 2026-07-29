@@ -1,6 +1,5 @@
-coroutine.yield()
-print("1")
-print("2")
-coroutine.yield()
-printerr("hi")
-print("3")
+local unistd = require("unistd")
+
+--print(unistd.getcwd())
+coroutine.yield({ type = "write", fd = 2, buffer = "hello" })
+coroutine.yield({ type = "exit", code = 0 })

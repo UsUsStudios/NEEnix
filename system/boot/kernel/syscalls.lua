@@ -127,7 +127,6 @@ end
 function calls.write(pcb, request)
 	continueproc(pcb)
 	local fd = pcb.fds[request.fd]
-	print(fd.fs.stringrepr())
 	return fd.fs.write(pcb, request.fd, request.buffer)
 end
 
