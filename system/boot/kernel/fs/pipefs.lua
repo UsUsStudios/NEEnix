@@ -83,6 +83,10 @@ local function create(next_fd)
 		error("invalid operation on " .. fs.stringrepr())
 	end
 
+	function fs.isFile(pcb, path)
+		error("invalid operation on " .. fs.stringrepr())
+	end
+
 	return fs
 end
 

@@ -10,6 +10,11 @@ scheduler.yields = 0
 scheduler.load = 0
 scheduler.ticktime = 0
 
+local run_queue = {}
+function scheduler.enqueue(pid)
+	table.insert(run_queue, pid)
+end
+
 local function deep_copy(obj, seen)
 	if type(obj) ~= "table" then
 		return obj
@@ -66,12 +71,6 @@ function scheduler.create_env()
 
 	return env
 end
-
-local run_queue = {}
-function scheduler.enqueue(pid)
-	table.insert(run_queue, pid)
-end
-
 function scheduler.new_process(fn, parent_pid, fds)
 	if fn == nil then
 		error("cannot start process with function nil")

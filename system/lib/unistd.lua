@@ -1,5 +1,17 @@
 local unistd = {}
 
+local function resolveFilename(filename)
+	if filename:sub(1, 1) ~= "/" then
+		filename = _G.cwd .. filename
+	end
+
+	return filename
+end
+
+-------------------------------------------------------------------------------------
+-------------------------------- FILE I/O PRIMITIVES --------------------------------
+-------------------------------------------------------------------------------------
+
 unistd.O_RDONLY = 1
 unistd.O_WRONLY = 2
 unistd.O_RDWR = 4
@@ -50,6 +62,7 @@ local function getModestr(flags)
 end
 
 function unistd.open(filename, flags)
+	filename = resolveFilename(filename)
 	if not (filename and flags) then
 		error("invalid arguments", 2)
 	end
@@ -74,10 +87,17 @@ function unistd.read(fd, count)
 	if err then
 		error(err, 2)
 	end
-	if data:sub(#data, #data) == "\n" then
-		data = data:sub(1, #data - 1) -- removing the terminating newline
-	end
 	return data, #data
+end
+
+function unistd.readall(fd)
+	local data, count = "", 1000
+	while count == 1000 do
+		local newdata, newcount = unistd.read(fd, 1000)
+		count = newcount
+		data = data .. newdata
+	end
+	return data
 end
 
 function unistd.write(fd, buffer)
@@ -117,6 +137,51 @@ end
 
 function unistd.pipe()
 	return table.unpack(unistd.open("/dev/popen", 1))
+end
+
+-------------------------------------------------------------------------------------
+------------------------------- FILE SYSTEM INTERFACE -------------------------------
+-------------------------------------------------------------------------------------
+
+function unistd.getcwd()
+	return _G.cwd
+end
+
+function unistd.chdir(filename)
+	filename = resolveFilename(filename)
+	if filename:sub(#filename, #filename) ~= "/" then
+		filename = filename .. "/"
+	end
+	_G.cwd = filename
+end
+
+function unistd.remove(filename)
+	filename = resolveFilename(filename)
+	local _, err = coroutine.yield({ type = "unlink", path = filename })
+	if err then
+		error(err, 2)
+	end
+end
+
+function unistd.rename(oldname, newname)
+	oldname = resolveFilename(oldname)
+	newname = resolveFilename(newname)
+	local fd = unistd.open(oldname, unistd.O_RDONLY)
+	local data = unistd.readall(fd)
+	unistd.close(fd)
+	unistd.remove(oldname)
+
+	fd = unistd.open(newname, unistd.O_WRONLY | unistd.O_CREAT | unistd.O_TRUNC | unistd.O_BYTES)
+	unistd.write(fd, data)
+	unistd.close(fd)
+end
+
+function unistd.mkdir(dirname)
+	dirname = resolveFilename(dirname)
+	local _, err = coroutine.yield({ type = "mkdir", path = dirname })
+	if err then
+		error(err, 2)
+	end
 end
 
 return unistd

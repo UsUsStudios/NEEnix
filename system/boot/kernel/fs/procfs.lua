@@ -4,6 +4,10 @@ local function findMatchingProcess(path)
 	if string.sub(path, 1, 6) == "kernel" then
 		return "kernel", string.sub(path, 8, #path)
 	end
+
+	if string.sub(path, 1, #"self") == "self" then
+		return "self", string.sub(path, #"self" + 2, #path)
+	end
 	for i, pcb in pairs(scheduler.processes) do
 		if string.sub(path, 1, #tostring(i)) == tostring(i) then
 			return pcb, string.sub(path, #tostring(i) + 2, #path)
@@ -234,6 +238,16 @@ local function create(next_fd)
 			end
 		end
 		return dirlist
+	end
+
+	function fs.isFile(_, path)
+		local pcb, property = findMatchingProcess(path)
+		if pcb == nil then
+			return false
+		elseif property ~= "" then
+			return true
+		end
+		return false
 	end
 
 	return fs

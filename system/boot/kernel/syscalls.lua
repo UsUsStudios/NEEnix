@@ -154,6 +154,12 @@ function calls.readdir(pcb, request)
 	return fs.readdir(pcb, normalized_path)
 end
 
+function calls.isfile(pcb, request)
+	continueproc(pcb)
+	local normalized_path, fs = vfs.resolvePathFs(request.path)
+	return fs.isFile(pcb, normalized_path)
+end
+
 function calls.mount(pcb, request)
 	continueproc(pcb)
 	vfs.mountFromFile(pcb, request.mountpoint, request.fspath)

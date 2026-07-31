@@ -8,9 +8,6 @@ local function create(next_fd, partition, disk)
 	end
 
 	function fs.open(pcb, path, mode)
-		if not files.exists(partition .. ":/" .. path, disk) then
-			return error("file does not exist: " .. path)
-		end
 		local handle = files.open(partition .. ":/" .. path, mode, disk)
 		if not handle then
 			return error("file handle is nil")
@@ -55,6 +52,10 @@ local function create(next_fd, partition, disk)
 
 	function fs.readdir(pcb, path)
 		return files.getChildren(partition .. ":/" .. path, disk)
+	end
+
+	function fs.isFile(pcb, path)
+		return files.isFile(partition .. ":/" .. path, disk)
 	end
 
 	return fs

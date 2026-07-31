@@ -3,7 +3,8 @@
 - [x] `procfs` kernel data
 - [ ] liblua
   - [x] file descriptor I/O, ch. 13
-  - [ ] file system I/O, ch. 14
+  - [x] file system I/O, ch. 14
+  - [x] pipes, ch. 16
   - [ ] sighandling, ch. 25
   - [ ] processes, ch. 26 and 27
   - [ ] system management and config, ch. 32 and 33
@@ -11,7 +12,6 @@
   - [ ] math, ch. 19 and 20
   - [ ] bit manip, ch. 21
 
-- [ ] pipes IPC and liblua
 - [ ] shell
 - [ ] `devfs`
   - [ ] disk device

@@ -43,6 +43,10 @@ local function create(get_fd)
 		return
 	end
 
+	function fs.isFile(pcb, path)
+		return
+	end
+
 	return fs
 end
 

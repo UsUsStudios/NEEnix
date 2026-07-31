@@ -1,5 +1,9 @@
 local unistd = require("unistd")
+local dirent = require("dirent")
 
---print(unistd.getcwd())
-coroutine.yield({ type = "write", fd = 2, buffer = "hello" })
+coroutine.yield()
+coroutine.yield()
+coroutine.yield()
+coroutine.yield()
+coroutine.yield()
 coroutine.yield({ type = "exit", code = 0 })
