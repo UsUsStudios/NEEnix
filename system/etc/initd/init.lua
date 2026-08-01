@@ -1,5 +1,6 @@
 local unistd = require("unistd")
 local dirent = require("dirent")
+local signal = require("signal")
 
 coroutine.yield()
 coroutine.yield()

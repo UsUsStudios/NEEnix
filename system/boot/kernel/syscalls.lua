@@ -1,11 +1,22 @@
-local SIGTERM = 1
-local SIGKILL = 2
+-- fetch the signal list from signal.lua
+-- calling a library directly from the kernel like this is a little sketchy ngl
+
+local signal
+do
+	local handle = files.open("system:/lib/signal.lua")
+	local data = handle.read("a")
+	handle.close()
+	local f, err = load(data, "/lib/signal.lua")
+	if err or not f then
+		error(err)
+	end
+	signal = f()
+end
 
 local function continueproc(pcb)
 	pcb.state = "ready"
 	scheduler.enqueue(pcb.pid)
 end
-
 local calls = {}
 
 ------------------------------------------------------------------------------------
@@ -35,26 +46,25 @@ end
 function calls.exit(pcb, request) -- end the execution of this process
 	pcb.state = "zombie"
 	pcb.exit_code = request.code
-	print("Process with PID " .. pcb.pid .. " ended with exit code " .. pcb.exit_code)
+	scheduler.dead(pcb, request)
 end
 
 function calls.kill(pcb, request) -- send a signal to the process
 	continueproc(pcb)
+
 	local proc = scheduler.processes[request.pid]
-	if proc.sighandlers[request.sig] ~= nil then
-		proc.sighandlers[request.sig](request.sig)
-	else
-		if request.sig == SIGTERM or request.sig == SIGKILL then
-			proc.state = "dead"
-			pcb.exit_code = 0
-		end
+	if request.sig == signal.SIGKILL then
+		proc.state = "dead"
+		pcb.exit_code = 0
+		return
 	end
+	table.insert(proc.sigs, request.sig)
 end
 
 function calls.signal(pcb, request) -- set a signal handler to this process
 	continueproc(pcb)
 
-	if request.sig ~= SIGKILL then
+	if request.sig ~= signal.SIGKILL then
 		pcb.sighandlers[request.sig] = request.handler
 	else
 		error("cannot set a signal handler for SIGKILL")

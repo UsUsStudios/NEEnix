@@ -3,6 +3,18 @@ _G.scheduler = {}
 local syscalls = include("syscalls.lua")(scheduler)
 local wrap_process = include("errors.lua")()
 
+local signal
+do
+	local handle = files.open("system:/lib/signal.lua")
+	local data = handle.read("a")
+	handle.close()
+	local f, err = load(data, "/lib/signal.lua")
+	if err or not f then
+		error(err)
+	end
+	signal = f()
+end
+
 scheduler.pid_counter = 0
 scheduler.processes = {}
 scheduler.ticks = 0
@@ -11,6 +23,24 @@ scheduler.load = 0
 scheduler.ticktime = 0
 
 local run_queue = {}
+
+local function get_sighandlers()
+	local function die()
+		coroutine.yield({ type = "exit", code = 1 })
+	end
+	local function ignore() end
+	return {
+		[signal.SIGKILL] = die,
+		[signal.SIGTERM] = die,
+		[signal.SIGINT] = die,
+		[signal.SIGHUP] = die,
+		[signal.SIGCHILD] = ignore,
+		[signal.SIGUSR1] = ignore,
+		[signal.SIGUSR2] = ignore,
+		[signal.SIGWINCH] = ignore,
+	}
+end
+
 function scheduler.enqueue(pid)
 	table.insert(run_queue, pid)
 end
@@ -71,6 +101,7 @@ function scheduler.create_env()
 
 	return env
 end
+
 function scheduler.new_process(fn, parent_pid, fds)
 	if fn == nil then
 		error("cannot start process with function nil")
@@ -92,13 +123,20 @@ function scheduler.new_process(fn, parent_pid, fds)
 		--                     - must contain key "fs" with value of fs instance that owns fd
 		--                     - rest of table is up to fs to define
 		fds = fds or {},
-		sighandlers = {},
+		sighandlers = get_sighandlers(),
+		sigs = {}, -- recieved signals, besides SIGKILL because it kills instantly
 		to_return = nil, -- return to the coroutine on next resume
 		error = nil, -- error message to return to coroutine on next resume
 		yields = 0, -- how many yields have been processed by the scheduler
 	}
 
 	debug.sethook(pcb.co, function()
+		for i, sig in ipairs(pcb.sigs) do
+			if pcb.sighandlers[sig] then
+				pcb.sighandlers[sig](sig) -- run the sighandler
+			end
+			table.remove(pcb.sigs, i)
+		end
 		coroutine.yield()
 	end, "", 1500)
 	scheduler.processes[pcb.pid] = pcb
@@ -123,6 +161,19 @@ local function handle_syscall(pcb, req)
 		pcb.state = "ready"
 		scheduler.enqueue(pcb.pid)
 	end
+end
+
+function scheduler.dead(pcb, req)
+	print("Process with PID " .. pcb.pid .. " ended with exit code " .. pcb.exit_code)
+	if type(req) ~= "table" then
+		print(req)
+	end
+	for _, wpid in ipairs(pcb.waiters) do
+		scheduler.processes[wpid].state = "ready"
+		scheduler.enqueue(wpid)
+	end
+
+	table.insert(scheduler.processes[pcb.ppid].sigs, signal.SIGCHILD) -- send sigchild signal to parent
 end
 
 function scheduler.tick()
@@ -158,18 +209,14 @@ function scheduler.tick()
 			if coroutine.status(pcb.co) == "dead" then
 				pcb.state = "zombie"
 				pcb.exit_code = pcb.exit_code or 0
-				print("Process with PID " .. pcb.pid .. " ended with exit code " .. pcb.exit_code)
-				if type(req) ~= "table" then
-					print(req)
-				end
-				for _, wpid in ipairs(pcb.waiters) do
-					scheduler.processes[wpid].state = "ready"
-					scheduler.enqueue(wpid)
-				end
+
+				scheduler.dead(pcb, req)
 			elseif not ok then
 				-- uncaught error
 				pcb.state = "zombie"
 				pcb.exit_code = -1
+
+				scheduler.dead(pcb, req)
 			else
 				local syscall_ok, err = pcall(handle_syscall, pcb, req)
 				-- err = err:match("^.*:%d+:%s*(.*)$")

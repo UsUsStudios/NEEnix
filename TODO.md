@@ -5,7 +5,7 @@
   - [x] file descriptor I/O, ch. 13
   - [x] file system I/O, ch. 14
   - [x] pipes, ch. 16
-  - [ ] sighandling, ch. 25
+  - [x] sighandling, ch. 25
   - [ ] processes, ch. 26 and 27
   - [ ] system management and config, ch. 32 and 33
   - [ ] date and time, ch. 22
@@ -30,4 +30,5 @@
 
 - [ ] user system
 - [ ] permissions system
+- [ ] symlinks
 - [ ] compositor?

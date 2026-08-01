@@ -67,7 +67,13 @@ function unistd.open(filename, flags)
 		error("invalid arguments", 2)
 	end
 
-	local modestr = getModestr(flags)
+	local modestr
+	if type(flags) == "number" then
+		modestr = getModestr(flags)
+	else
+		modestr = flags
+	end
+
 	local fd, err = coroutine.yield({ type = "open", path = filename, mode = modestr })
 	if (not fd) or err then
 		error(err, 2)
