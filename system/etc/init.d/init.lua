@@ -1,12 +1,14 @@
 local unistd = require("unistd")
 
-local function printenv()
-	for k, v in pairs(unistd.environ()) do
-		print(k, v[1], v[2])
-	end
+local function read(proc)
+	local fd = unistd.open("/proc/" .. proc .. "/status", unistd.O_RDONLY)
+	print(unistd.readall(fd))
+	unistd.close(fd)
 end
 
-printenv()
+read(1)
+read(2)
+read("kernel")
 
 coroutine.yield()
 coroutine.yield()

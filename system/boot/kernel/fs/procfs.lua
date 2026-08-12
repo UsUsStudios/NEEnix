@@ -16,6 +16,24 @@ local function findMatchingProcess(path)
 	return nil
 end
 
+local function formatMemory(bytes)
+	local units = {
+		"B",
+		"KiB",
+		"MiB",
+		"GiB",
+		"TiB",
+	}
+	local prefix = 1
+	local value = bytes
+	while value > 1024 do
+		value /= 1024
+		prefix += 1
+	end
+	value = math.floor(value * 100 + 0.5) / 100
+	return value .. " " .. units[prefix]
+end
+
 local properties = {
 	status = function(pcb)
 		local str = ""
@@ -39,6 +57,8 @@ local properties = {
 			.. tostring(#pcb.fds)
 			.. "\nSighandlers:  "
 			.. tostring(#pcb.sighandlers)
+			.. "\nMemory usage:  "
+			.. formatMemory(coroutine.memoryused(pcb.co, true))
 		return str
 	end,
 	pid = function(pcb)
@@ -90,17 +110,40 @@ local properties = {
 		end
 		return str
 	end,
+	memoryused = function(pcb)
+		return coroutine.memoryused(pcb.co, true)
+	end,
 }
 
 local kernelprop = {
 	status = function()
-		local str = "" .. "Uptime:             " .. tostring(chip.getTime()) .. "s" .. "\nScheduler Ticks:  " .. tostring(
-			scheduler.ticks
-		) .. " ticks" .. "\nScheduler Yields: " .. tostring(scheduler.yields) .. " yields" .. "NEEnix Version:    " .. _G.NEENIXVERSION .. "\nLua Version:     " .. not _VERSION and "unkown lua version, probably 5.2" or _VERSION .. "\nLoad:            " .. tostring(
-			scheduler.load
-		) .. " processes" .. "\nTick time:       " .. tostring(scheduler.ticktime) .. " seconds" .. "\nMounts:          " .. tostring(
-			#vfs.mounts
-		)
+		local kernelmemory = coroutine.memoryused(0, true)
+		local totalmemory = kernelmemory -- in bytes
+		for _, pcb in ipairs(scheduler.processes) do
+			totalmemory += coroutine.memoryused(pcb.co, true)
+		end
+
+		local str = ""
+			.. "Uptime:             "
+			.. tostring(chip.getTime())
+			.. "s\nScheduler Ticks:  "
+			.. tostring(scheduler.ticks)
+			.. " ticks\nScheduler Yields: "
+			.. tostring(scheduler.yields)
+			.. " yields\nNEEnix Version:   "
+			.. _G.NEENIXVERSION
+			.. "\nLua Version:      "
+			.. (_VERSION or "unkown lua version, probably 5.2")
+			.. "\nLoad:             "
+			.. tostring(scheduler.load)
+			.. " processes\nTick time:        "
+			.. tostring(scheduler.ticktime)
+			.. " seconds\nMounts:           "
+			.. tostring(#vfs.mounts)
+			.. "\nKernel mem used:  "
+			.. formatMemory(kernelmemory)
+			.. "\nTotal mem used:   "
+			.. formatMemory(totalmemory)
 		return str
 	end,
 	uptime = function()
@@ -132,16 +175,29 @@ local kernelprop = {
 		end
 		return str
 	end,
-	-- memoryusage = function()      -- unusable since collectgarbage is disabled D:
-	--	return tostring(collectgarbage("count")) .. "kB"
-	-- end,
+	totalmemoryused = function()
+		local sum = coroutine.memoryused(0, true)
+		for _, pcb in ipairs(scheduler.processes) do
+			sum += coroutine.memoryused(pcb.co, true)
+		end
+		return sum
+	end,
+	kernelmemoryused = function()
+		return coroutine.memoryused(0, true)
+	end,
 }
 
 local function generateBuffer(pcb, property)
+	local ok, result
 	if pcb == "kernel" then
-		return kernelprop[property]()
+		ok, result = pcall(kernelprop[property])
+	else
+		ok, result = pcall(properties[property], pcb)
 	end
-	return properties[property](pcb)
+	if ok then
+		return result
+	end
+	error("unable to generate buffer: " .. result)
 end
 
 local function create(next_fd)
@@ -164,7 +220,7 @@ local function create(next_fd)
 			pcb = pathpcb,
 			property = property,
 			offset = 0,
-			buffer = generateBuffer(pcb, property),
+			buffer = generateBuffer(pathpcb, property),
 		}
 		return fd
 	end

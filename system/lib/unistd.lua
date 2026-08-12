@@ -97,13 +97,13 @@ function unistd.read(fd, count)
 end
 
 function unistd.readall(fd)
-	local data, count = "", 1000
+	local buffer, count = { "" }, 1000
 	while count == 1000 do
-		local newdata, newcount = unistd.read(fd, 1000)
+		local data, newcount = unistd.read(fd, 1000)
 		count = newcount
-		data = data .. newdata
+		table.insert(buffer, data)
 	end
-	return data
+	return table.concat(buffer, "")
 end
 
 function unistd.write(fd, buffer)
