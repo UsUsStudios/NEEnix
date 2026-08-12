@@ -28,6 +28,29 @@ function calls.getpid(pcb, _) -- return the PID of the process that called
 	return pcb.pid
 end
 
+function calls.getenv(pcb, request) -- return the value and exported of environment variable request.name
+	continueproc(pcb)
+	return pcb.env[request.name]
+end
+
+function calls.environ(pcb, _) -- return the environment list
+	continueproc(pcb)
+	return pcb.env
+end
+
+function calls.setenv(pcb, request) -- sets the value and exported state of an environment variable, or unsets the variable if request.value is nil
+	continueproc(pcb)
+	if request.value == nil then
+		pcb.env[request.name] = nil
+	else
+		if not pcb.env[request.name] then
+			pcb.env[request.name] = {}
+		end
+		pcb.env[request.name][1] = request.value
+		pcb.env[request.name][2] = request.exported or false
+	end
+end
+
 function calls.sleep(pcb, request) -- wait a given number of seconds
 	pcb.state = "sleeping"
 	pcb.wake_at = chip.getTime() + request.seconds

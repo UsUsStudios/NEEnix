@@ -1,6 +1,12 @@
 local unistd = require("unistd")
-local dirent = require("dirent")
-local signal = require("signal")
+
+local function printenv()
+	for k, v in pairs(unistd.environ()) do
+		print(k, v[1], v[2])
+	end
+end
+
+printenv()
 
 coroutine.yield()
 coroutine.yield()

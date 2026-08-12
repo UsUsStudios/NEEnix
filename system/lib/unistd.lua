@@ -190,4 +190,9 @@ function unistd.mkdir(dirname)
 	end
 end
 
+function unistd.environ()
+	local env = coroutine.yield({ type = "environ" })
+	return env
+end
+
 return unistd

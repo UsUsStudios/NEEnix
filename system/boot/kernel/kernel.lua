@@ -27,6 +27,8 @@ local function pid1()
 	mount("/proc", "procfs")
 	mount("/dev/popen", "pipefs")
 
+	coroutine.yield({ type = "setenv", name = "hi", value = "hello", exported = true })
+
 	local pipefds, err = coroutine.yield({ type = "open", path = "/dev/popen" })
 	if err then
 		print(err)

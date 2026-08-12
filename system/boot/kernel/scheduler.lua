@@ -84,12 +84,8 @@ function scheduler.create_env()
 
 	function env.print(...)
 		local str = ""
-		if type(...) == "table" then
-			for _, v in ipairs(...) do
-				str = str .. tostring(v) .. "\t"
-			end
-		else
-			str = tostring(...)
+		for _, v in ipairs({ ... }) do
+			str ..= tostring(v) .. "\t"
 		end
 		local _, err = coroutine.yield({ type = "write", fd = 1, buffer = str }) -- write to the fd of STDOUT
 		if err then
@@ -105,6 +101,26 @@ end
 function scheduler.new_process(fn, parent_pid, fds)
 	if fn == nil then
 		error("cannot start process with function nil")
+	end
+
+	local env = {}
+	if parent_pid then
+		for name, value in pairs(scheduler.processes[parent_pid].env) do
+			if value[2] then -- if it is exported
+				env[name] = { value[1], value[2] }
+			end
+		end
+	else
+		-- get default environment variables from /etc/environment
+		local environment = "system:/etc/environment/"
+		for _, child in ipairs(files.getChildren(environment, 0)) do
+			if files.isFile(environment .. child) then
+				local handle = files.open(environment .. child, "r")
+				local data = handle.read("a")
+				env[child] = { data:sub(1, #data - 1), true }
+				handle.close()
+			end
+		end
 	end
 
 	scheduler.pid_counter = scheduler.pid_counter + 1
@@ -128,6 +144,7 @@ function scheduler.new_process(fn, parent_pid, fds)
 		to_return = nil, -- return to the coroutine on next resume
 		error = nil, -- error message to return to coroutine on next resume
 		yields = 0, -- how many yields have been processed by the scheduler
+		env = env, -- environment variables - key: name, value: {value, exported (bool)}
 	}
 
 	debug.sethook(pcb.co, function()
