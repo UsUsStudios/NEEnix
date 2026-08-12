@@ -190,6 +190,10 @@ function scheduler.dead(pcb, req)
 		scheduler.enqueue(wpid)
 	end
 
+	for _, fd in ipairs(pcb.fds) do
+		fd.fs.close(pcb, fd)
+	end
+
 	table.insert(scheduler.processes[pcb.ppid].sigs, signal.SIGCHILD) -- send sigchild signal to parent
 end
 
