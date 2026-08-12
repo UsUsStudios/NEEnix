@@ -1,14 +1,7 @@
-local unistd = require("unistd")
-
-local function read(proc)
-	local fd = unistd.open("/proc/" .. proc .. "/status", unistd.O_RDONLY)
-	print(unistd.readall(fd))
-	unistd.close(fd)
-end
-
-read(1)
-read(2)
-read("kernel")
+local screen = coroutine.yield({ type = "open", path = "/dev/screen" })
+screen.fill(0, 0, 0)
+screen.draw()
+screen.close()
 
 coroutine.yield()
 coroutine.yield()

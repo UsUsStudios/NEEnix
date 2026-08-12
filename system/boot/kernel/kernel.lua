@@ -26,6 +26,7 @@ local function pid1()
 	mount("/", "rootfs")
 	mount("/proc", "procfs")
 	mount("/dev/popen", "pipefs")
+	mount("/dev/screen", "screenfs")
 
 	coroutine.yield({ type = "setenv", name = "hi", value = "hello", exported = true })
 

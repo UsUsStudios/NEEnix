@@ -12,13 +12,13 @@
   - [ ] math, ch. 19 and 20
   - [ ] bit manip, ch. 21
 
-- [ ] screen control requesting
 - [ ] user input
 - [ ] terminal emulator
 - [ ] shell
 - [ ] `devfs`
+  - [ ] device tracker daemon
   - [ ] disk device
-  - [ ] color display peripheral + screen device
+  - [x] color display peripheral + screen device
   - [ ] simple display peripheral + headsup device
   - [ ] keyboard input device
   - [ ] computer peripheral
