@@ -27,6 +27,7 @@
   - [ ] dynamic light peripheral
 - [ ] internet syscalls API
 - [ ] neato compatability layer
+- [ ] fix error traceback to not include stack frames below the one that got the blame
 
 ## Post-release
 

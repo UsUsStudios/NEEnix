@@ -82,16 +82,16 @@ function scheduler.create_env()
 	env.include = nil
 	env._VERSION = nil
 
-	function env.print(...)
-		local str = ""
-		for _, v in ipairs({ ... }) do
-			str ..= tostring(v) .. "\t"
-		end
-		local _, err = coroutine.yield({ type = "write", fd = 1, buffer = str }) -- write to the fd of STDOUT
-		if err then
-			error(err)
-		end
-	end
+	--function env.print(...)
+	--	local str = ""
+	--	for _, v in ipairs({ ... }) do
+	--		str ..= tostring(v) .. "\t"
+	--	end
+	--	local _, err = coroutine.yield({ type = "write", fd = 1, buffer = str }) -- write to the fd of STDOUT
+	--	if err then
+	--		error(err)
+	--	end
+	--end
 
 	env.package, env.require, env.loadfile = include("loadfile-require.lua", env)()
 

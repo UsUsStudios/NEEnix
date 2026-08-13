@@ -1,11 +1,2 @@
-local screen = coroutine.yield({ type = "open", path = "/dev/screen" })
-screen.fill(0, 0, 0)
-screen.draw()
-screen.close()
-
-coroutine.yield()
-coroutine.yield()
-coroutine.yield()
-coroutine.yield()
-coroutine.yield()
+coroutine.yield({ type = "exec", path = "/bin/nterm.lua", cwd = "/bin/" })
 coroutine.yield({ type = "exit", code = 0 })

@@ -25,6 +25,9 @@ local shim = {}
 
 package.config = "/\n;\n?"
 package.path = table.concat({
+	"?.lua",
+	"?/init.lua",
+
 	"/lib/?.lua",
 	"/lib/?/init.lua",
 }, ";")
@@ -71,9 +74,12 @@ function package.searchpath(name, path, sep, rep)
 
 	for template in string.gmatch(path, "(.-)(" .. patescape(templatesep) .. ")") do
 		local filename = string.gsub(template, patescape(templatesubst), namepathfrag)
-		local fd = coroutine.yield({ type = "open", path = filename, mode = "r" })
-		coroutine.yield({ type = "close", fd = fd })
-		if fd then
+
+		if filename:sub(1, 1) ~= "/" then
+			filename = _G.cwd .. filename
+		end
+
+		if coroutine.yield({ type = "isfile", path = filename }) then
 			return filename
 		else
 			table.insert(tried, filename)
