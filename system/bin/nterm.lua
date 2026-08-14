@@ -76,19 +76,13 @@ end
 
 local function fetchpipes()
 	-- read stdout
-	local stdout_data, err1 = coroutine.yield({ type = "read", fd = stdout_out })
-	if err1 then
-		error(err1)
-	end
+	local stdout_data = unistd.read(stdout_out, 1)
 	if stdout_data ~= "\0" then
 		append(stdout_data)
 	end
 
 	-- read stderr
-	local stderr_data, err2 = coroutine.yield({ type = "read", fd = stderr_out })
-	if err2 then
-		error(err2)
-	end
+	local stderr_data = unistd.read(stderr_out, 1)
 	if stderr_data ~= "\0" then
 		append(stderr_data)
 	end
