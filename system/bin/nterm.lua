@@ -1,6 +1,8 @@
 local unistd = require("unistd")
 local loadPSF2 = require("nterm.load-psf2")
 
+local VERSION = "v1.0"
+
 -- initialize the terminal font
 local screen = unistd.open("/dev/screen", 1)
 local font, err = loadPSF2("/usr/share/consolefonts/Lat15-VGA16.psf", {
@@ -17,12 +19,12 @@ screen.draw()
 local stdout_in, stdout_out = unistd.pipe()
 local stderr_in, stderr_out = unistd.pipe()
 local program = ... or "/bin/sh.lua"
-coroutine.yield({ type = "exec", path = program, stdout = stdout_in, stderr = stderr_in })
+coroutine.yield({ type = "exec", path = program, stdout = stdout_in, stderr = stderr_in, cwd = "/" })
 
 local scroll = 1 -- the index of the highest line on the screen
 local offx, offy = 4, 4
 local termwidth = 99
-local termheight = 37
+local termheight = 35
 local lines = {
 	"",
 }
@@ -61,7 +63,11 @@ end
 
 local function refresh()
 	screen.fill(0, 0, 0)
-	for i = 0, termheight do
+
+	font.drawLine(offx, offy + font.height * 0.2, nil, "    nterm " .. VERSION .. ": " .. program)
+	font.drawLine(offx, offy + font.height, nil, string.rep("-", termwidth))
+
+	for i = 2, termheight + 2 do -- to leave room for the tab name
 		if i + scroll > #lines then
 			break
 		end
