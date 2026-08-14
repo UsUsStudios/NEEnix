@@ -80,6 +80,7 @@ function calls.kill(pcb, request) -- send a signal to the process
 	if request.sig == signal.SIGKILL then
 		proc.state = "dead"
 		pcb.exit_code = 0
+		scheduler.dead(pcb, request)
 		return
 	end
 	table.insert(proc.sigs, request.sig)
