@@ -1,5 +1,7 @@
 _G.scheduler = {}
 
+local DEBUG_PRINT = true
+
 local syscalls = include("syscalls.lua")(scheduler)
 local wrap_process = include("errors.lua")()
 
@@ -82,16 +84,18 @@ function scheduler.create_env()
 	env.include = nil
 	env._VERSION = nil
 
-	function env.print(...)
-		local strbuf = {}
-		for _, v in ipairs({ ... }) do
-			strbuf[#strbuf + 1] = tostring(v)
-			strbuf[#strbuf + 1] = "    "
-		end
-		strbuf[#strbuf + 1] = "\n"
-		local _, err = coroutine.yield({ type = "write", fd = 1, buffer = table.concat(strbuf) }) -- write to the fd of STDOUT
-		if err then
-			error(err)
+	if not DEBUG_PRINT then
+		function env.print(...)
+			local strbuf = {}
+			for _, v in ipairs({ ... }) do
+				strbuf[#strbuf + 1] = tostring(v)
+				strbuf[#strbuf + 1] = "    "
+			end
+			strbuf[#strbuf + 1] = "\n"
+			local _, err = coroutine.yield({ type = "write", fd = 1, buffer = table.concat(strbuf) }) -- write to the fd of STDOUT
+			if err then
+				error(err)
+			end
 		end
 	end
 
@@ -163,6 +167,7 @@ function scheduler.new_process(fn, parent_pid, fds)
 		table.insert(scheduler.processes[parent_pid].children, pcb.pid)
 	end
 	scheduler.enqueue(pcb.pid)
+
 	return pcb
 end
 
@@ -187,9 +192,12 @@ function scheduler.dead(pcb, req)
 	if type(req) ~= "table" then
 		print(req)
 	end
+
+	-- wake up waiting processors and return the exit code to them
 	for _, wpid in ipairs(pcb.waiters) do
 		scheduler.processes[wpid].state = "ready"
 		scheduler.enqueue(wpid)
+		scheduler.processes[wpid].to_return = pcb.exit_code
 	end
 
 	for _, fd in ipairs(pcb.fds) do

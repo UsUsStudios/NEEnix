@@ -106,12 +106,11 @@ function calls.spawn(pcb, request) -- spawn a new process executing a function
 	}
 
 	if request.args then
-		scheduler.new_process(function()
+		return scheduler.new_process(function()
 			request.fn(table.unpack(request.args))
-		end, pcb.pid, fds)
-	else
-		scheduler.new_process(request.fn, pcb.pid, fds)
+		end, pcb.pid, fds).pid -- return pid
 	end
+	return scheduler.new_process(request.fn, pcb.pid, fds).pid -- return pid
 end
 
 function calls.exec(pcb, request) -- spawn a new process executing a file
@@ -127,7 +126,7 @@ function calls.exec(pcb, request) -- spawn a new process executing a file
 	fs.close(pcb, fd)
 
 	request.fn = fn -- to pass onto calls.spawn
-	calls.spawn(pcb, request)
+	return calls.spawn(pcb, request)
 end
 
 ------------------------------------------------------------------------------------
