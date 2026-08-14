@@ -1,7 +1,7 @@
 local unistd = require("unistd")
 local loadPSF2 = require("nterm.load-psf2")
 
-local VERSION = "v1.1"
+local VERSION = "v1.2"
 
 -- initialize the terminal font
 local screen = unistd.open("/dev/screen", 1)
@@ -11,15 +11,13 @@ local font, err = loadPSF2("/usr/share/consolefonts/Lat15-VGA16.psf", {
 if not font or err then
 	error(err)
 end
-screen.fill(0, 0, 0)
-font.drawLine(10, 10, nil, "Hello, World!")
-screen.draw()
 
 -- open the pipes and the program that the terminal should run
 local stdout_in, stdout_out = unistd.pipe()
 local stderr_in, stderr_out = unistd.pipe()
 local program = ... or "/bin/sh.lua"
-coroutine.yield({ type = "exec", path = program, stdout = stdout_in, stderr = stderr_in, cwd = "/" })
+local program_pid =
+	coroutine.yield({ type = "exec", path = program, stdout = stdout_in, stderr = stderr_in, cwd = "/" })
 
 local scroll = 1 -- the index of the highest line on the screen
 local offx, offy = 4, 4
@@ -95,6 +93,18 @@ local function fetchpipes()
 		append(stderr_data)
 	end
 end
+
+-- spawn a process that reports when the child process died
+coroutine.yield({
+	type = "spawn",
+	fn = function()
+		local exit_code = coroutine.yield({ type = "wait", pid = program_pid })
+		coroutine.yield()
+		coroutine.yield() -- wait a sec to let the parent print the error
+		coroutine.yield()
+		append("\n\nProcess with PID " .. program_pid .. " ended with exit code " .. exit_code .. "\n")
+	end,
+})
 
 while true do
 	fetchpipes()
