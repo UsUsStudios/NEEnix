@@ -13,20 +13,17 @@ local function traceback(err)
 	return table.concat(tracelist, "\n")
 end
 
-local function wrap_process(fn)
+local function wrap_process(fn, pcb)
 	local ok, err = xpcall(fn, traceback)
 
 	if not ok then
 		local _, err2 = coroutine.yield({ type = "write", fd = 2, buffer = err }) -- write to the fd of STDERR
 		if err2 then
-			print(
-				"an error occurred while reporting error of pid "
-					.. coroutine.yield({ type = "getpid" })
-					.. ": "
-					.. err2
-			)
+			print("an error occurred while reporting error of pid " .. pcb.pid .. ": " .. err2)
+			print("original error: " .. err)
 		end
 		coroutine.yield({ type = "exit", code = -1 })
+		return
 	end
 	coroutine.yield({ type = "exit", code = 0 })
 end

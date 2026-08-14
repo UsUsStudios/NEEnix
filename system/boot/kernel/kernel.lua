@@ -32,7 +32,7 @@ local function pid1()
 
 	local pipefds, err = coroutine.yield({ type = "open", path = "/dev/popen" })
 	if err then
-		print(err)
+		error(err)
 	end
 	local stdout_in, stdout_out = table.unpack(pipefds)
 	pipefds, err = coroutine.yield({ type = "open", path = "/dev/popen" })
@@ -61,9 +61,27 @@ local function pid1()
 	end
 end
 
+print("\n")
+print("##############################################################################")
+print("##############################################################################")
+print("######################                                  ######################")
+print("######################    NEW NEENIX SESSION STARTED    ######################")
+print("######################                                  ######################")
+print("##############################################################################")
+print("##############################################################################")
 scheduler.new_process(pid1)
 
 while true do
 	scheduler.tick()
 	coroutine.yield()
+
+	if scheduler.processes[1].state ~= "ready" then
+		print("#############################################################")
+		print("##############   KERNEL PANIC: PID 1 IS DEAD   ##############")
+		print("#############################################################")
+		break
+	end
+end
+
+while true do
 end

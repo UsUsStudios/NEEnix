@@ -1,6 +1,6 @@
 _G.scheduler = {}
 
-local DEBUG_PRINT = true
+local DEBUG_PRINT = false
 
 local syscalls = include("syscalls.lua")(scheduler)
 local wrap_process = include("errors.lua")()
@@ -133,9 +133,6 @@ function scheduler.new_process(fn, parent_pid, fds)
 	local pcb = {
 		pid = scheduler.pid_counter,
 		ppid = parent_pid,
-		co = coroutine.create(function()
-			wrap_process(fn)
-		end),
 		state = "ready", -- ready | running | sleeping | blocked | zombie | dead
 		wake_at = nil, -- for sleeping
 		exit_code = nil,
@@ -152,6 +149,9 @@ function scheduler.new_process(fn, parent_pid, fds)
 		yields = 0, -- how many yields have been processed by the scheduler
 		env = env, -- environment variables - key: name, value: {value, exported (bool)}
 	}
+	pcb.co = coroutine.create(function()
+		wrap_process(fn, pcb)
+	end)
 
 	debug.sethook(pcb.co, function()
 		for i, sig in ipairs(pcb.sigs) do
@@ -160,8 +160,10 @@ function scheduler.new_process(fn, parent_pid, fds)
 			end
 			table.remove(pcb.sigs, i)
 		end
-		coroutine.yield()
+		-- TODO: readd preemeption?
+		-- coroutine.yield()
 	end, "", 1500)
+
 	scheduler.processes[pcb.pid] = pcb
 	if parent_pid and scheduler.processes[parent_pid] then
 		table.insert(scheduler.processes[parent_pid].children, pcb.pid)
@@ -189,8 +191,8 @@ end
 
 function scheduler.dead(pcb, req)
 	print("Process with PID " .. pcb.pid .. " ended with exit code " .. pcb.exit_code)
-	if type(req) ~= "table" then
-		print(req)
+	if type(req) ~= "table" and req then
+		print("    error of exit: " .. req)
 	end
 
 	-- wake up waiting processors and return the exit code to them
@@ -201,10 +203,18 @@ function scheduler.dead(pcb, req)
 	end
 
 	for _, fd in ipairs(pcb.fds) do
-		fd.fs.close(pcb, fd)
+		local syscall_ok, err = xpcall(handle_syscall, debug.traceback, pcb, { type = "close", fd = fd })
+		pcb.state = "dead"
+
+		if not syscall_ok and err then
+			err = "error in syscall: " .. err
+			pcb.error = err
+		end
 	end
 
-	table.insert(scheduler.processes[pcb.ppid].sigs, signal.SIGCHILD) -- send sigchild signal to parent
+	if pcb.ppid then
+		table.insert(scheduler.processes[pcb.ppid].sigs, signal.SIGCHILD) -- send sigchild signal to parent
+	end
 end
 
 function scheduler.tick()
@@ -249,7 +259,7 @@ function scheduler.tick()
 
 				scheduler.dead(pcb, req)
 			else
-				local syscall_ok, err = pcall(handle_syscall, pcb, req)
+				local syscall_ok, err = xpcall(handle_syscall, debug.traceback, pcb, req)
 				if not syscall_ok and err then
 					err = "syscall error: " .. err
 					pcb.error = err

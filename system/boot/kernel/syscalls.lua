@@ -70,7 +70,7 @@ end
 function calls.exit(pcb, request) -- end the execution of this process
 	pcb.state = "zombie"
 	pcb.exit_code = request.code
-	scheduler.dead(pcb, request)
+	scheduler.dead(pcb)
 end
 
 function calls.kill(pcb, request) -- send a signal to the process
@@ -80,7 +80,7 @@ function calls.kill(pcb, request) -- send a signal to the process
 	if request.sig == signal.SIGKILL then
 		proc.state = "dead"
 		pcb.exit_code = 0
-		scheduler.dead(pcb, request)
+		scheduler.dead(pcb)
 		return
 	end
 	table.insert(proc.sigs, request.sig)
@@ -142,6 +142,13 @@ end
 
 function calls.close(pcb, request)
 	continueproc(pcb)
+	if request.fd == 0 then
+		error("cannot close STDIN")
+	elseif request.fd == 1 then
+		error("cannot close STDOUT")
+	elseif request.fd == 2 then
+		error("cannot close STDERR")
+	end
 	local fd = pcb.fds[request.fd]
 	fd.fs.close(pcb, request.fd)
 end

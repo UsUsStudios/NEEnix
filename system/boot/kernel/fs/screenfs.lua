@@ -8,6 +8,8 @@ local function create(get_fd, id)
 		fs.api = _G.screen
 	end
 
+	fs.api.fs = fs -- so it can be closed directly
+
 	fs.owner = 0
 	fs.apicopy = {}
 

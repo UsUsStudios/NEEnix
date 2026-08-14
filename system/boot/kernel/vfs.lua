@@ -1,6 +1,6 @@
 _G.vfs = {}
 
-local next_fd_num = 0
+local next_fd_num = 128 -- fds 1 to 128 are reserved
 local function next_fd()
 	next_fd_num += 1
 	return next_fd_num

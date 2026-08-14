@@ -29,13 +29,15 @@ local function create(next_fd)
 		return { inputfd, outputfd }
 	end
 
-	function fs.close(pcb, fd)
-		pcb.fds[fd].closed = true
+	function fs.close(_, fd)
+		fd.closed = true
 	end
 
 	function fs.read(pcb, fd)
 		local outputfd = pcb.fds[fd]
-		if outputfd.buffer then -- it's an input fd
+		if not outputfd then
+			return error("can't read from a nil file descriptor")
+		elseif outputfd.buffer then -- it's an input fd
 			return error("can't read from an input file descriptor")
 		elseif outputfd.closed then
 			return error("can't read from closed pipe")
@@ -57,7 +59,9 @@ local function create(next_fd)
 
 	function fs.write(pcb, fd, buffer)
 		local inputfd = pcb.fds[fd]
-		if inputfd.input then -- it's an output fd
+		if not inputfd then
+			return error("can't write to a nil file descriptor")
+		elseif inputfd.input then -- it's an output fd
 			return error("can't write to an output file descriptor")
 		elseif inputfd.closed then
 			return error("can't write to closed pipe")
