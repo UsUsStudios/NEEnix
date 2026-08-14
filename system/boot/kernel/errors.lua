@@ -17,7 +17,15 @@ local function wrap_process(fn)
 	local ok, err = xpcall(fn, traceback)
 
 	if not ok then
-		print(err)
+		local _, err2 = coroutine.yield({ type = "write", fd = 2, buffer = err }) -- write to the fd of STDERR
+		if err2 then
+			print(
+				"an error occurred while reporting error of pid "
+					.. coroutine.yield({ type = "getpid" })
+					.. ": "
+					.. err2
+			)
+		end
 		coroutine.yield({ type = "exit", code = -1 })
 	end
 	coroutine.yield({ type = "exit", code = 0 })

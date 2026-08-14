@@ -25,8 +25,8 @@ scheduler.ticktime = 0
 local run_queue = {}
 
 local function get_sighandlers()
-	local function die()
-		coroutine.yield({ type = "exit", code = 1 })
+	local function die(sig)
+		coroutine.yield({ type = "exit", code = sig })
 	end
 	local function ignore() end
 	return {
