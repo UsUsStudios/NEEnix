@@ -30,7 +30,35 @@ local function pid1()
 
 	coroutine.yield({ type = "setenv", name = "hi", value = "hello", exported = true })
 
-	coroutine.yield({ type = "exec", path = "/etc/init.d/init.lua" })
+	local pipefds, err = coroutine.yield({ type = "open", path = "/dev/popen" })
+	if err then
+		print(err)
+	end
+	local stdout_in, stdout_out = table.unpack(pipefds)
+	pipefds, err = coroutine.yield({ type = "open", path = "/dev/popen" })
+	if err then
+		error(err)
+	end
+	local stderr_in, stderr_out = table.unpack(pipefds)
+
+	coroutine.yield({ type = "exec", path = "/etc/init.d/init.lua", stdout = stdout_in, stderr = stderr_in })
+
+	while true do
+		local stdout_data, err1 = coroutine.yield({ type = "read", fd = stdout_out })
+		local stderr_data, err2 = coroutine.yield({ type = "read", fd = stderr_out })
+		if err1 then
+			error(err1)
+		end
+		if err2 then
+			error(err2)
+		end
+		if stdout_data ~= "\0" then
+			print(stdout_data)
+		end
+		if stderr_data ~= "\0" then
+			print(stderr_data)
+		end
+	end
 end
 
 scheduler.new_process(pid1)

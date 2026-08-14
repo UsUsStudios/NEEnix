@@ -110,6 +110,9 @@ local function loadPSF2(path, fontOptions)
 
 		local indexes = { ... }
 		for i, glyph_index in ipairs(indexes) do
+			if type(glyph_index) == "function" then
+				continue
+			end
 			local charX = x + (i - 1) * (glyph_width + spacing)
 			local err = Font.drawGlyph(charX, y, drawOptions, glyph_index)
 

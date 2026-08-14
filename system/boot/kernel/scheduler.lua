@@ -82,16 +82,18 @@ function scheduler.create_env()
 	env.include = nil
 	env._VERSION = nil
 
-	--function env.print(...)
-	--	local str = ""
-	--	for _, v in ipairs({ ... }) do
-	--		str ..= tostring(v) .. "\t"
-	--	end
-	--	local _, err = coroutine.yield({ type = "write", fd = 1, buffer = str }) -- write to the fd of STDOUT
-	--	if err then
-	--		error(err)
-	--	end
-	--end
+	function env.print(...)
+		local strbuf = {}
+		for _, v in ipairs({ ... }) do
+			strbuf[#strbuf + 1] = tostring(v)
+			strbuf[#strbuf + 1] = "    "
+		end
+		strbuf[#strbuf + 1] = "\n"
+		local _, err = coroutine.yield({ type = "write", fd = 1, buffer = table.concat(strbuf) }) -- write to the fd of STDOUT
+		if err then
+			error(err)
+		end
+	end
 
 	env.package, env.require, env.loadfile = include("loadfile-require.lua", env)()
 
@@ -240,8 +242,8 @@ function scheduler.tick()
 				scheduler.dead(pcb, req)
 			else
 				local syscall_ok, err = pcall(handle_syscall, pcb, req)
-				-- err = err:match("^.*:%d+:%s*(.*)$")
 				if not syscall_ok and err then
+					err = "syscall error: " .. err
 					pcb.error = err
 				end
 			end
