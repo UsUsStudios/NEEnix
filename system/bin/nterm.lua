@@ -1,7 +1,7 @@
 local unistd = require("unistd")
 local loadPSF2 = require("nterm.load-psf2")
 
-local VERSION = "v1.0"
+local VERSION = "v1.1"
 
 -- initialize the terminal font
 local screen = unistd.open("/dev/screen", 1)
@@ -67,11 +67,11 @@ local function refresh()
 	font.drawLine(offx, offy + font.height * 0.2, nil, "    nterm " .. VERSION .. ": " .. program)
 	font.drawLine(offx, offy + font.height, nil, string.rep("-", termwidth))
 
-	for i = 2, termheight + 2 do -- to leave room for the tab name
+	for i = 0, termheight do
 		if i + scroll > #lines then
 			break
 		end
-		font.drawLine(offx, offy + font.height * i, nil, lines[i + scroll])
+		font.drawLine(offx, offy + font.height * (i + 2), nil, lines[i + scroll]) -- to leave room for the tab name
 	end
 	screen.draw()
 end
