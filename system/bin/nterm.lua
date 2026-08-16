@@ -60,8 +60,7 @@ local function append(str)
 end
 
 local function refresh()
-	screen.fill(0, 0, 0)
-
+	screen.set(0x000000FF)
 	font.drawLine(offx, offy + font.height * 0.2, nil, "    nterm " .. VERSION .. ": " .. program)
 	font.drawLine(offx, offy + font.height, nil, string.rep("-", termwidth))
 

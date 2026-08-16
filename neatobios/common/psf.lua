@@ -134,7 +134,6 @@ function makeFont(path)
 
 			local i = 1
 			local glyphIdx = 1
-
 			for bufferIdx = 1, #glyph + glyphHeight * charSpacing do
 				local pixel = glyph[glyphIdx]
 				if math.fmod(bufferIdx, glyphWidth + charSpacing) + 1 <= glyphWidth then
@@ -143,29 +142,15 @@ function makeFont(path)
 					pixel = 0
 				end
 				if pixel == 1 then
-					buffer[i] = fr
-					buffer[i + 1] = fg
-					buffer[i + 2] = fb
-					buffer[i + 3] = fa
-					i = i + 4
+					buffer[i] = string.char(fr, fg, fb, fa)
+					i += 1
 				else
-					buffer[i] = br
-					buffer[i + 1] = bg
-					buffer[i + 2] = bb
-					buffer[i + 3] = ba
-					i = i + 4
+					buffer[i] = string.char(br, bg, bb, ba)
+					i += 1
 				end
 			end
-
-			if bufferCache[background] == nil then
-				bufferCache[background] = {}
-			end
-			if bufferCache[background][foreground] == nil then
-				bufferCache[background][foreground] = {}
-			end
-			fgCache[c] = buffer
+			layer.writeData(x, y, table.concat(buffer), glyphWidth + charSpacing)
 		end
-		layer.drawPixels(x, y, buffer, glyphWidth + charSpacing, glyphHeight)
 	end
 
 	function Font.drawLine(x, y, str, options)

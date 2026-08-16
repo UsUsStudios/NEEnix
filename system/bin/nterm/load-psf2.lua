@@ -36,7 +36,7 @@ local function loadPSF2(path, fontOptions)
 	unistd.lseek(fd, header_size, unistd.SEEK_SET) -- Go to the _end_ of the header.
 
 	-- Manually create a pixel buffer for a "missing character" glyph.
-	local missing_glyph = table.concat({ -- Newline to keep Emacs' formatter from screwing with me.
+	local missing_glyph = table.concat({
 		string.rep(fgData, glyph_width),
 		string.rep(fgData .. string.rep(bgData, glyph_width - 2) .. fgData, glyph_height - 2),
 		string.rep(fgData, glyph_width),
@@ -53,8 +53,7 @@ local function loadPSF2(path, fontOptions)
 		local glyph = {}
 		for rowNum = 1, glyph_height do
 			local row = {}
-			local rawbyte = unistd.read(fd, 1)
-			local byte = string.unpack("I1", rawbyte)
+			local byte = string.unpack("I1", unistd.read(fd, 1))
 			for colNum = 0, glyph_width - 1 do
 				local bit = (byte >> colNum) & 1 -- Real bit operators!
 				if bit == 0 then
@@ -94,9 +93,9 @@ local function loadPSF2(path, fontOptions)
 
 		local glyph, err = Font.getGlyph(index)
 		if err == nil then
-			layer.drawPixels(x, y, glyph, glyph_width, glyph_height)
+			layer.writeData(x, y, glyph, glyph_width)
 		elseif err == "no such glyph" then
-			layer.drawPixels(x, y, missing_glyph, glyph_width, glyph_height)
+			layer.writeData(x, y, missing_glyph, glyph_width)
 		else
 			return err
 		end
@@ -122,7 +121,7 @@ local function loadPSF2(path, fontOptions)
 
 			-- Handle drawing the background between glyphs when `spacing > 0`.
 			if i > 1 and spacing > 0 then
-				layer.drawPixels(charX - spacing, y, string.rep(bgData, spacing * glyph_height), spacing, glyph_height)
+				layer.writeData(charX - spacing, y, string.rep(bgData, spacing * glyph_height), spacing)
 			end
 		end
 	end
@@ -221,7 +220,7 @@ local function loadPSF2(path, fontOptions)
 
 				-- Handle drawing the background between glyphs when `spacing > 0`.
 				if i > 0 and spacing > 0 then
-					layer.drawPixels(
+					layer.writeData(
 						charX - spacing,
 						y,
 						string.rep(bgData, spacing * glyph_height),
@@ -257,13 +256,7 @@ local function loadPSF2(path, fontOptions)
 
 				-- Handle drawing the background between glyphs when `spacing > 0`.
 				if i > 0 and spacing > 0 then
-					layer.drawPixels(
-						charX - spacing,
-						y,
-						string.rep(bgData, spacing * glyph_height),
-						spacing,
-						glyph_height
-					)
+					layer.writeData(charX - spacing, y, string.rep(bgData, spacing * glyph_height), spacing)
 				end
 
 				i = i + 1
