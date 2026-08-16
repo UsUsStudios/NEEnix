@@ -28,6 +28,23 @@
 - [ ] internet syscalls API
 - [ ] neato compatability layer
 - [ ] fix error traceback to not include stack frames below the one that got the blame
+- [ ] add some languages transpiled/interpreted in lua, examples:
+  - [ ] js: <https://github.com/PaulBernier/castl>
+  - [ ] C: <https://github.com/ExAcler/XPicoC>
+  - [ ] C: <https://github.com/shinh/ELVM>
+  - [ ] scheme: <https://github.com/allea/lal>
+  - [ ] lisp: <https://github.com/zick/LuaLisp>
+  - [ ] lisp: <https://github.com/bullno1/mLisp/blob/master/mLisp.lua>
+  - [ ] forth: <https://github.com/zeroflag/equinox>
+  - [ ] forth: <https://github.com/vifino/luaforth>
+  - [ ] brainfuck: <https://github.com/ExtReMLapin/fast_brainfuck.lua>
+  - [ ] brainfuck: <https://github.com/TangentFoxy/LuaFuck>
+  - [ ] chip-8: <https://github.com/brianhang/chip8-lua>
+  - [ ] BASIC: <https://gist.github.com/MineRobber9000/7d735c2cd6620760670b9658760b4790>
+  - [ ] moonscript: <https://github.com/leafo/moonscript>
+  - [ ] typescript: <https://github.com/TypeScriptToLua/TypeScriptToLua>
+  - [ ] python: <https://github.com/DreamAndDead/medusa>
+  - [ ] python: <https://github.com/ThePiGuy24/Pythish>
 
 ## Post-release
 
