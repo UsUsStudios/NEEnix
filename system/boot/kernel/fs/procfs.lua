@@ -8,7 +8,7 @@ local function findMatchingProcess(path)
 	if string.sub(path, 1, #"self") == "self" then
 		return "self", string.sub(path, #"self" + 2, #path)
 	end
-	for i, pcb in pairs(_G.scheduler.processes) do
+	for i, pcb in pairs(scheduler.processes) do
 		if string.sub(path, 1, #tostring(i)) == tostring(i) then
 			return pcb, string.sub(path, #tostring(i) + 2, #path)
 		end
@@ -58,7 +58,7 @@ local properties = {
 			.. "\nSighandlers:  "
 			.. tostring(#pcb.sighandlers)
 			.. "\nMemory usage:  "
-			.. formatMemory(_G.coroutine.memoryused(pcb.co, true))
+			.. formatMemory(coroutine.memoryused(pcb.co, true))
 		return str
 	end,
 	pid = function(pcb)
@@ -111,35 +111,35 @@ local properties = {
 		return str
 	end,
 	memoryused = function(pcb)
-		return _G.coroutine.memoryused(pcb.co, true)
+		return coroutine.memoryused(pcb.co, true)
 	end,
 }
 
 local kernelprop = {
 	status = function()
-		local kernelmemory = _G.coroutine.memoryused(0, true)
+		local kernelmemory = coroutine.memoryused(0, true)
 		local totalmemory = kernelmemory -- in bytes
-		for _, pcb in ipairs(_G.scheduler.processes) do
-			totalmemory += _G.coroutine.memoryused(pcb.co, true)
+		for _, pcb in ipairs(scheduler.processes) do
+			totalmemory += coroutine.memoryused(pcb.co, true)
 		end
 
 		local str = ""
 			.. "Uptime:             "
-			.. tostring(_G.chip.getTime())
+			.. tostring(chip.getTime())
 			.. "s\nScheduler Ticks:  "
-			.. tostring(_G.scheduler.ticks)
+			.. tostring(scheduler.ticks)
 			.. " ticks\nScheduler Yields: "
-			.. tostring(_G.scheduler.yields)
+			.. tostring(scheduler.yields)
 			.. " yields\nNEEnix Version:   "
-			.. _G.NEENIXVERSION
+			.. NEENIXVERSION
 			.. "\nLua Version:      "
 			.. (_VERSION or "unkown lua version, probably 5.2")
 			.. "\nLoad:             "
-			.. tostring(_G.scheduler.load)
+			.. tostring(scheduler.load)
 			.. " processes\nTick time:        "
-			.. tostring(_G.scheduler.ticktime)
+			.. tostring(scheduler.ticktime)
 			.. " seconds\nMounts:           "
-			.. tostring(#_G.vfs.mounts)
+			.. tostring(#vfs.mounts)
 			.. "\nKernel mem used:  "
 			.. formatMemory(kernelmemory)
 			.. "\nTotal mem used:   "
@@ -147,43 +147,43 @@ local kernelprop = {
 		return str
 	end,
 	uptime = function()
-		return tostring(_G.chip.getTime())
+		return tostring(chip.getTime())
 	end,
 	schedulerticks = function()
-		return tostring(_G.scheduler.ticks)
+		return tostring(scheduler.ticks)
 	end,
 	scheduleryields = function()
-		return tostring(_G.scheduler.yields)
+		return tostring(scheduler.yields)
 	end,
 	version = function()
 		if not _VERSION then
-			return "NEEnix " .. _G.NEENIXVERSION .. ", unkown Lua version, likely 5.2"
+			return "NEEnix " .. NEENIXVERSION .. ", unkown Lua version, likely 5.2"
 		else
-			return "NEEnix " .. _G.NEENIXVERSION .. ", " .. _VERSION
+			return "NEEnix " .. NEENIXVERSION .. ", " .. _VERSION
 		end
 	end,
 	load = function()
-		return tostring(_G.scheduler.load)
+		return tostring(scheduler.load)
 	end,
 	ticktime = function()
-		return tostring(_G.scheduler.ticktime)
+		return tostring(scheduler.ticktime)
 	end,
 	mounts = function()
 		local str = ""
-		for _, mount in ipairs(_G.vfs.mounts) do -- doing it like this so the list is in ascending length order
+		for _, mount in ipairs(vfs.mounts) do -- doing it like this so the list is in ascending length order
 			str = mount.fs.stringrepr() .. " at " .. mount.path .. "\n" .. str
 		end
 		return str
 	end,
 	totalmemoryused = function()
-		local sum = _G.coroutine.memoryused(0, true)
-		for _, pcb in ipairs(_G.scheduler.processes) do
-			sum += _G.coroutine.memoryused(pcb.co, true)
+		local sum = coroutine.memoryused(0, true)
+		for _, pcb in ipairs(scheduler.processes) do
+			sum += coroutine.memoryused(pcb.co, true)
 		end
 		return sum
 	end,
 	kernelmemoryused = function()
-		return _G.coroutine.memoryused(0, true)
+		return coroutine.memoryused(0, true)
 	end,
 }
 
@@ -277,7 +277,7 @@ local function create(next_fd)
 		if pcb == nil then
 			table.insert(dirlist, "kernel")
 			table.insert(dirlist, "self")
-			for pid, _ in pairs(_G.scheduler.processes) do
+			for pid, _ in pairs(scheduler.processes) do
 				table.insert(dirlist, tostring(pid))
 			end
 		elseif property ~= "" then

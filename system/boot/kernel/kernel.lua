@@ -1,8 +1,8 @@
 function _G.include(path, env)
-	local handle = _G.files.open("system:/boot/kernel/" .. path)
+	local handle = files.open("system:/boot/kernel/" .. path)
 	local data = handle.read("a")
 	handle.close()
-	local f, err = _G.load(data, "/boot/kernel/" .. path, nil, env or _G)
+	local f, err = load(data, "/boot/kernel/" .. path, nil, env or _G)
 	if err then
 		error(err)
 	end
@@ -12,8 +12,8 @@ end
 _G.NEENIXVERSION = "v0.0.1"
 _G.cwd = "/"
 
-_G.include("scheduler.lua")()
-_G.include("vfs.lua")()
+include("scheduler.lua")()
+include("vfs.lua")()
 
 local function pid1()
 	local function mount(mountpoint, fsname)
@@ -69,13 +69,13 @@ print("######################    NEW NEENIX SESSION STARTED    #################
 print("######################                                  ######################")
 print("##############################################################################")
 print("##############################################################################")
-_G.scheduler.new_process(pid1)
+scheduler.new_process(pid1)
 
 while true do
-	_G.scheduler.tick()
+	scheduler.tick()
 	coroutine.yield()
 
-	if _G.scheduler.processes[1].state ~= "ready" and _G.scheduler.processes[1].state ~= "running" then
+	if scheduler.processes[1].state ~= "ready" and scheduler.processes[1].state ~= "running" then
 		print("#############################################################")
 		print("##############   KERNEL PANIC: PID 1 IS DEAD   ##############")
 		print("#############################################################")

@@ -3,9 +3,9 @@
 local function create(get_fd, id)
 	local fs = {}
 	if id then
-		fs.api = _G.io.wrapPeripheral(id)
+		fs.api = io.wrapPeripheral(id)
 	else
-		fs.api = _G.screen
+		fs.api = screen
 	end
 
 	fs.api.fs = fs -- so it can be closed directly

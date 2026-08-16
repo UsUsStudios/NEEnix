@@ -8,10 +8,10 @@ local function create(next_fd, partition, disk)
 	end
 
 	function fs.open(pcb, path, mode)
-		if not _G.files.isFile(partition .. ":/" .. path, disk) then
+		if not files.isFile(partition .. ":/" .. path, disk) then
 			error("path is not file")
 		end
-		local handle = _G.files.open(partition .. ":/" .. path, mode, disk)
+		local handle = files.open(partition .. ":/" .. path, mode, disk)
 		if not handle then
 			error("file handle is nil")
 		end
@@ -46,19 +46,19 @@ local function create(next_fd, partition, disk)
 	end
 
 	function fs.mkdir(pcb, path)
-		_G.files.makeDir(partition .. ":/" .. path, disk)
+		files.makeDir(partition .. ":/" .. path, disk)
 	end
 
 	function fs.unlink(pcb, path)
-		_G.files.delete(partition .. ":/" .. path, disk)
+		files.delete(partition .. ":/" .. path, disk)
 	end
 
 	function fs.readdir(pcb, path)
-		return _G.files.getChildren(partition .. ":/" .. path, disk)
+		return files.getChildren(partition .. ":/" .. path, disk)
 	end
 
 	function fs.isFile(pcb, path)
-		return _G.files.isFile(partition .. ":/" .. path, disk)
+		return files.isFile(partition .. ":/" .. path, disk)
 	end
 
 	return fs

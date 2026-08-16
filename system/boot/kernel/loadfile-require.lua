@@ -76,7 +76,7 @@ function package.searchpath(name, path, sep, rep)
 		local filename = string.gsub(template, patescape(templatesubst), namepathfrag)
 
 		if filename:sub(1, 1) ~= "/" then
-			filename = _G.cwd .. filename
+			filename = cwd .. filename
 		end
 
 		if coroutine.yield({ type = "isfile", path = filename }) then
@@ -98,7 +98,7 @@ function shim.loadfile(filename, mode, environment)
 	local data = coroutine.yield({ type = "read", fd = fd, count = "a" })
 	coroutine.yield({ type = "close", fd = fd })
 
-	return _G.load(data, filename, mode or "bt", environment or _G)
+	return load(data, filename, mode or "bt", environment or _G)
 end
 
 package.preload = {}
