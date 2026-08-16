@@ -1,8 +1,8 @@
 function _G.include(path, env)
-	local handle = files.open("system:/boot/kernel/" .. path)
+	local handle = _G.files.open("system:/boot/kernel/" .. path)
 	local data = handle.read("a")
 	handle.close()
-	local f, err = load(data, "/boot/kernel/" .. path, nil, env or _G)
+	local f, err = _G.load(data, "/boot/kernel/" .. path, nil, env or _G)
 	if err then
 		error(err)
 	end
@@ -12,8 +12,8 @@ end
 _G.NEENIXVERSION = "v0.0.1"
 _G.cwd = "/"
 
-include("scheduler.lua")()
-include("vfs.lua")()
+_G.include("scheduler.lua")()
+_G.include("vfs.lua")()
 
 local function pid1()
 	local function mount(mountpoint, fsname)
@@ -69,10 +69,10 @@ print("######################    NEW NEENIX SESSION STARTED    #################
 print("######################                                  ######################")
 print("##############################################################################")
 print("##############################################################################")
-scheduler.new_process(pid1)
+_G.scheduler.new_process(pid1)
 
 while true do
-	scheduler.tick()
+	_G.scheduler.tick()
 	coroutine.yield()
 
 	if _G.scheduler.processes[1].state ~= "ready" and _G.scheduler.processes[1].state ~= "running" then

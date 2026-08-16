@@ -98,7 +98,7 @@ function shim.loadfile(filename, mode, environment)
 	local data = coroutine.yield({ type = "read", fd = fd, count = "a" })
 	coroutine.yield({ type = "close", fd = fd })
 
-	return load(data, filename, mode or "bt", environment or _G)
+	return _G.load(data, filename, mode or "bt", environment or _G)
 end
 
 package.preload = {}

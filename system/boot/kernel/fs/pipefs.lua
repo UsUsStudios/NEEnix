@@ -69,6 +69,7 @@ local function create(next_fd)
 			return error("other end of pipe is closed")
 		end
 		table.insert(inputfd.buffer, buffer)
+		return
 	end
 
 	function fs.fsync(pcb)

@@ -3,10 +3,10 @@
 
 local signal
 do
-	local handle = files.open("system:/lib/signal.lua")
+	local handle = _G.files.open("system:/lib/signal.lua")
 	local data = handle.read("a")
 	handle.close()
-	local f, err = load(data, "/lib/signal.lua")
+	local f, err = _G.load(data, "/lib/signal.lua")
 	if err or not f then
 		error(err)
 	end
@@ -15,7 +15,7 @@ end
 
 local function continueproc(pcb)
 	pcb.state = "ready"
-	scheduler.enqueue(pcb.pid)
+	_G.scheduler.enqueue(pcb.pid)
 end
 
 local calls = {}
@@ -54,11 +54,11 @@ end
 
 function calls.sleep(pcb, request) -- wait a given number of seconds
 	pcb.state = "sleeping"
-	pcb.wake_at = chip.getTime() + request.seconds
+	pcb.wake_at = _G.chip.getTime() + request.seconds
 end
 
 function calls.wait(pcb, request) -- wait until another process finishes executing
-	local target = scheduler.processes[request.pid]
+	local target = _G.scheduler.processes[request.pid]
 	if not target or target.state == "zombie" then
 		continueproc(pcb)
 	else
@@ -70,17 +70,17 @@ end
 function calls.exit(pcb, request) -- end the execution of this process
 	pcb.state = "zombie"
 	pcb.exit_code = request.code
-	scheduler.dead(pcb)
+	_G.scheduler.dead(pcb)
 end
 
 function calls.kill(pcb, request) -- send a signal to the process
 	continueproc(pcb)
 
-	local proc = scheduler.processes[request.pid]
+	local proc = _G.scheduler.processes[request.pid]
 	if request.sig == signal.SIGKILL then
 		proc.state = "dead"
 		pcb.exit_code = 0
-		scheduler.dead(pcb)
+		_G.scheduler.dead(pcb)
 		return
 	end
 	table.insert(proc.sigs, request.sig)
@@ -107,11 +107,11 @@ function calls.spawn(pcb, request) -- spawn a new process executing a function
 	}
 
 	if request.args then
-		return scheduler.new_process(function()
+		return _G.scheduler.new_process(function()
 			request.fn(table.unpack(request.args))
 		end, pcb.pid, fds).pid -- return pid
 	end
-	return scheduler.new_process(request.fn, pcb.pid, fds).pid -- return pid
+	return _G.scheduler.new_process(request.fn, pcb.pid, fds).pid -- return pid
 end
 
 function calls.exec(pcb, request) -- spawn a new process executing a file
@@ -122,7 +122,7 @@ function calls.exec(pcb, request) -- spawn a new process executing a file
 
 	local normalized_path, fs = vfs.resolvePathFs(request.path)
 	local fd = fs.open(pcb, normalized_path, "r")
-	local fn = load(fs.read(pcb, fd, "a"), request.path, nil, env)
+	local fn = _G.load(fs.read(pcb, fd, "a"), request.path, nil, env)
 	if fn == nil then
 		error("function loaded from file invalid")
 	end
@@ -139,7 +139,7 @@ end
 
 function calls.open(pcb, request)
 	continueproc(pcb)
-	local normalized_path, fs = vfs.resolvePathFs(request.path)
+	local normalized_path, fs = _G.vfs.resolvePathFs(request.path)
 	return fs.open(pcb, normalized_path, request.mode)
 end
 
@@ -182,31 +182,31 @@ end
 
 function calls.mkdir(pcb, request)
 	continueproc(pcb)
-	local normalized_path, fs = vfs.resolvePathFs(request.path)
+	local normalized_path, fs = _G.vfs.resolvePathFs(request.path)
 	return fs.mkdir(pcb, normalized_path)
 end
 
 function calls.unlink(pcb, request)
 	continueproc(pcb)
-	local normalized_path, fs = vfs.resolvePathFs(request.path)
+	local normalized_path, fs = _G.vfs.resolvePathFs(request.path)
 	return fs.unlink(pcb, normalized_path)
 end
 
 function calls.readdir(pcb, request)
 	continueproc(pcb)
-	local normalized_path, fs = vfs.resolvePathFs(request.path)
+	local normalized_path, fs = _G.vfs.resolvePathFs(request.path)
 	return fs.readdir(pcb, normalized_path)
 end
 
 function calls.isfile(pcb, request)
 	continueproc(pcb)
-	local normalized_path, fs = vfs.resolvePathFs(request.path)
+	local normalized_path, fs = _G.vfs.resolvePathFs(request.path)
 	return fs.isFile(pcb, normalized_path)
 end
 
 function calls.mount(pcb, request)
 	continueproc(pcb)
-	vfs.mountFromFile(pcb, request.mountpoint, request.fspath)
+	_G.vfs.mountFromFile(pcb, request.mountpoint, request.fspath)
 end
 
 return calls

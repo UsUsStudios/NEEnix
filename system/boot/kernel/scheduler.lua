@@ -2,27 +2,27 @@ _G.scheduler = {}
 
 local DEBUG_PRINT = false
 
-local syscalls = include("syscalls.lua")(scheduler)
-local wrap_process = include("errors.lua")()
+local syscalls = _G.include("syscalls.lua")()
+local wrap_process = _G.include("errors.lua")()
 
 local signal
 do
-	local handle = files.open("system:/lib/signal.lua")
+	local handle = _G.files.open("system:/lib/signal.lua")
 	local data = handle.read("a")
 	handle.close()
-	local f, err = load(data, "/lib/signal.lua")
+	local f, err = _G.load(data, "/lib/signal.lua")
 	if err or not f then
 		error(err)
 	end
 	signal = f()
 end
 
-scheduler.pid_counter = 0
-scheduler.processes = {}
-scheduler.ticks = 0
-scheduler.yields = 0
-scheduler.load = 0
-scheduler.ticktime = 0
+_G.scheduler.pid_counter = 0
+_G.scheduler.processes = {}
+_G.scheduler.ticks = 0
+_G.scheduler.yields = 0
+_G.scheduler.load = 0
+_G.scheduler.ticktime = 0
 
 local run_queue = {}
 
@@ -43,7 +43,7 @@ local function get_sighandlers()
 	}
 end
 
-function scheduler.enqueue(pid)
+function _G.scheduler.enqueue(pid)
 	table.insert(run_queue, pid)
 end
 
@@ -67,7 +67,7 @@ local function deep_copy(obj, seen)
 	return copy
 end
 
-function scheduler.create_env()
+function _G.scheduler.create_env()
 	local env = deep_copy(_G)
 	env.chip = nil
 	env.headsup = nil
@@ -99,19 +99,19 @@ function scheduler.create_env()
 		end
 	end
 
-	env.package, env.require, env.loadfile = include("loadfile-require.lua", env)()
+	env.package, env.require, env.loadfile = _G.include("loadfile-require.lua", env)()
 
 	return env
 end
 
-function scheduler.new_process(fn, parent_pid, fds)
+function _G.scheduler.new_process(fn, parent_pid, fds)
 	if fn == nil then
 		error("cannot start process with function nil")
 	end
 
 	local env = {}
 	if parent_pid then
-		for name, value in pairs(scheduler.processes[parent_pid].env) do
+		for name, value in pairs(_G.scheduler.processes[parent_pid].env) do
 			if value[2] then -- if it is exported
 				env[name] = { value[1], value[2] }
 			end
@@ -119,9 +119,9 @@ function scheduler.new_process(fn, parent_pid, fds)
 	else
 		-- get default environment variables from /etc/environment
 		local environment = "system:/etc/environment/"
-		for _, child in ipairs(files.getChildren(environment, 0)) do
-			if files.isFile(environment .. child) then
-				local handle = files.open(environment .. child, "r")
+		for _, child in ipairs(_G.files.getChildren(environment, 0)) do
+			if _G.files.isFile(environment .. child) then
+				local handle = _G.files.open(environment .. child, "r")
 				local data = handle.read("a")
 				env[child] = { data:sub(1, #data - 1), true }
 				handle.close()
@@ -129,9 +129,9 @@ function scheduler.new_process(fn, parent_pid, fds)
 		end
 	end
 
-	scheduler.pid_counter = scheduler.pid_counter + 1
+	_G.scheduler.pid_counter = _G.scheduler.pid_counter + 1
 	local pcb = {
-		pid = scheduler.pid_counter,
+		pid = _G.scheduler.pid_counter,
 		ppid = parent_pid,
 		state = "ready", -- ready | running | sleeping | blocked | zombie | dead
 		wake_at = nil, -- for sleeping
@@ -153,7 +153,7 @@ function scheduler.new_process(fn, parent_pid, fds)
 		wrap_process(fn, pcb)
 	end)
 
-	debug.sethook(pcb.co, function()
+	_G.debug.sethook(pcb.co, function()
 		for i, sig in ipairs(pcb.sigs) do
 			if pcb.sighandlers[sig] then
 				pcb.sighandlers[sig](sig) -- run the sighandler
@@ -164,11 +164,11 @@ function scheduler.new_process(fn, parent_pid, fds)
 		-- coroutine.yield()
 	end, "", 1500)
 
-	scheduler.processes[pcb.pid] = pcb
-	if parent_pid and scheduler.processes[parent_pid] then
-		table.insert(scheduler.processes[parent_pid].children, pcb.pid)
+	_G.scheduler.processes[pcb.pid] = pcb
+	if parent_pid and _G.scheduler.processes[parent_pid] then
+		table.insert(_G.scheduler.processes[parent_pid].children, pcb.pid)
 	end
-	scheduler.enqueue(pcb.pid)
+	_G.scheduler.enqueue(pcb.pid)
 
 	return pcb
 end
@@ -176,7 +176,7 @@ end
 local function handle_syscall(pcb, req)
 	if req == nil then
 		pcb.state = "ready"
-		scheduler.enqueue(pcb.pid)
+		_G.scheduler.enqueue(pcb.pid)
 	else
 		for callName, call in pairs(syscalls) do
 			if req.type == callName then
@@ -185,11 +185,11 @@ local function handle_syscall(pcb, req)
 			end
 		end
 		pcb.state = "ready"
-		scheduler.enqueue(pcb.pid)
+		_G.scheduler.enqueue(pcb.pid)
 	end
 end
 
-function scheduler.dead(pcb, req)
+function _G.scheduler.dead(pcb, req)
 	print("Process with PID " .. pcb.pid .. " ended with exit code " .. pcb.exit_code)
 	if type(req) ~= "table" and req then
 		print("    error of exit: " .. req)
@@ -197,9 +197,9 @@ function scheduler.dead(pcb, req)
 
 	-- wake up waiting processors and return the exit code to them
 	for _, wpid in ipairs(pcb.waiters) do
-		scheduler.processes[wpid].state = "ready"
-		scheduler.enqueue(wpid)
-		scheduler.processes[wpid].to_return = pcb.exit_code
+		_G.scheduler.processes[wpid].state = "ready"
+		_G.scheduler.enqueue(wpid)
+		_G.scheduler.processes[wpid].to_return = pcb.exit_code
 	end
 
 	for _, fd in ipairs(pcb.fds) do
@@ -213,30 +213,30 @@ function scheduler.dead(pcb, req)
 	end
 
 	if pcb.ppid then
-		table.insert(scheduler.processes[pcb.ppid].sigs, signal.SIGCHILD) -- send sigchild signal to parent
+		table.insert(_G.scheduler.processes[pcb.ppid].sigs, signal.SIGCHILD) -- send sigchild signal to parent
 	end
 end
 
-function scheduler.tick()
-	scheduler.ticks = scheduler.ticks + 1
-	local now = chip.getTime()
+function _G.scheduler.tick()
+	_G.scheduler.ticks = _G.scheduler.ticks + 1
+	local now = _G.chip.getTime()
 
 	-- wake up sleeping processes
-	for pid, pcb in pairs(scheduler.processes) do
+	for pid, pcb in pairs(_G.scheduler.processes) do
 		if pcb.state == "sleeping" and pcb.wake_at <= now then
 			pcb.state = "ready"
-			scheduler.enqueue(pid)
+			_G.scheduler.enqueue(pid)
 		end
 	end
 
 	local queue = run_queue
-	scheduler.load = #queue
+	_G.scheduler.load = #queue
 	run_queue = {}
 
 	for _, pid in ipairs(queue) do
-		local pcb = scheduler.processes[pid]
+		local pcb = _G.scheduler.processes[pid]
 		if pcb and pcb.state == "ready" then
-			scheduler.yields = scheduler.yields + 1
+			_G.scheduler.yields = _G.scheduler.yields + 1
 			pcb.yields = pcb.yields + 1
 			pcb.state = "running"
 			local ok, req
@@ -251,13 +251,13 @@ function scheduler.tick()
 				pcb.state = "zombie"
 				pcb.exit_code = pcb.exit_code or 0
 
-				scheduler.dead(pcb, req)
+				_G.scheduler.dead(pcb, req)
 			elseif not ok then
 				-- uncaught error
 				pcb.state = "zombie"
 				pcb.exit_code = -1
 
-				scheduler.dead(pcb, req)
+				_G.scheduler.dead(pcb, req)
 			else
 				local syscall_ok, err = xpcall(handle_syscall, debug.traceback, pcb, req)
 				if not syscall_ok and err then
@@ -267,12 +267,12 @@ function scheduler.tick()
 			end
 		end
 	end
-	scheduler.ticktime = chip.getTime() - now
+	_G.scheduler.ticktime = _G.chip.getTime() - now
 end
 
-function scheduler.printProcesses()
+function _G.scheduler.printProcesses()
 	print("PID", "state", "wake_at", "exit_code")
-	for _, pcb in pairs(scheduler.processes) do
+	for _, pcb in pairs(_G.scheduler.processes) do
 		print(pcb.pid, pcb.state, pcb.wake_at, pcb.exit_code)
 	end
 end

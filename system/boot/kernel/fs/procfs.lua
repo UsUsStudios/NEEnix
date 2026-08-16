@@ -8,7 +8,7 @@ local function findMatchingProcess(path)
 	if string.sub(path, 1, #"self") == "self" then
 		return "self", string.sub(path, #"self" + 2, #path)
 	end
-	for i, pcb in pairs(scheduler.processes) do
+	for i, pcb in pairs(_G.scheduler.processes) do
 		if string.sub(path, 1, #tostring(i)) == tostring(i) then
 			return pcb, string.sub(path, #tostring(i) + 2, #path)
 		end
@@ -58,7 +58,7 @@ local properties = {
 			.. "\nSighandlers:  "
 			.. tostring(#pcb.sighandlers)
 			.. "\nMemory usage:  "
-			.. formatMemory(coroutine.memoryused(pcb.co, true))
+			.. formatMemory(_G.coroutine.memoryused(pcb.co, true))
 		return str
 	end,
 	pid = function(pcb)
@@ -111,35 +111,35 @@ local properties = {
 		return str
 	end,
 	memoryused = function(pcb)
-		return coroutine.memoryused(pcb.co, true)
+		return _G.coroutine.memoryused(pcb.co, true)
 	end,
 }
 
 local kernelprop = {
 	status = function()
-		local kernelmemory = coroutine.memoryused(0, true)
+		local kernelmemory = _G.coroutine.memoryused(0, true)
 		local totalmemory = kernelmemory -- in bytes
-		for _, pcb in ipairs(scheduler.processes) do
-			totalmemory += coroutine.memoryused(pcb.co, true)
+		for _, pcb in ipairs(_G.scheduler.processes) do
+			totalmemory += _G.coroutine.memoryused(pcb.co, true)
 		end
 
 		local str = ""
 			.. "Uptime:             "
-			.. tostring(chip.getTime())
+			.. tostring(_G.chip.getTime())
 			.. "s\nScheduler Ticks:  "
-			.. tostring(scheduler.ticks)
+			.. tostring(_G.scheduler.ticks)
 			.. " ticks\nScheduler Yields: "
-			.. tostring(scheduler.yields)
+			.. tostring(_G.scheduler.yields)
 			.. " yields\nNEEnix Version:   "
 			.. _G.NEENIXVERSION
 			.. "\nLua Version:      "
 			.. (_VERSION or "unkown lua version, probably 5.2")
 			.. "\nLoad:             "
-			.. tostring(scheduler.load)
+			.. tostring(_G.scheduler.load)
 			.. " processes\nTick time:        "
-			.. tostring(scheduler.ticktime)
+			.. tostring(_G.scheduler.ticktime)
 			.. " seconds\nMounts:           "
-			.. tostring(#vfs.mounts)
+			.. tostring(#_G.vfs.mounts)
 			.. "\nKernel mem used:  "
 			.. formatMemory(kernelmemory)
 			.. "\nTotal mem used:   "
@@ -147,13 +147,13 @@ local kernelprop = {
 		return str
 	end,
 	uptime = function()
-		return tostring(chip.getTime())
+		return tostring(_G.chip.getTime())
 	end,
 	schedulerticks = function()
-		return tostring(scheduler.ticks)
+		return tostring(_G.scheduler.ticks)
 	end,
 	scheduleryields = function()
-		return tostring(scheduler.yields)
+		return tostring(_G.scheduler.yields)
 	end,
 	version = function()
 		if not _VERSION then
@@ -163,27 +163,27 @@ local kernelprop = {
 		end
 	end,
 	load = function()
-		return tostring(scheduler.load)
+		return tostring(_G.scheduler.load)
 	end,
 	ticktime = function()
-		return tostring(scheduler.ticktime)
+		return tostring(_G.scheduler.ticktime)
 	end,
 	mounts = function()
 		local str = ""
-		for _, mount in ipairs(vfs.mounts) do -- doing it like this so the list is in ascending length order
+		for _, mount in ipairs(_G.vfs.mounts) do -- doing it like this so the list is in ascending length order
 			str = mount.fs.stringrepr() .. " at " .. mount.path .. "\n" .. str
 		end
 		return str
 	end,
 	totalmemoryused = function()
-		local sum = coroutine.memoryused(0, true)
-		for _, pcb in ipairs(scheduler.processes) do
-			sum += coroutine.memoryused(pcb.co, true)
+		local sum = _G.coroutine.memoryused(0, true)
+		for _, pcb in ipairs(_G.scheduler.processes) do
+			sum += _G.coroutine.memoryused(pcb.co, true)
 		end
 		return sum
 	end,
 	kernelmemoryused = function()
-		return coroutine.memoryused(0, true)
+		return _G.coroutine.memoryused(0, true)
 	end,
 }
 
@@ -277,7 +277,7 @@ local function create(next_fd)
 		if pcb == nil then
 			table.insert(dirlist, "kernel")
 			table.insert(dirlist, "self")
-			for pid, _ in pairs(scheduler.processes) do
+			for pid, _ in pairs(_G.scheduler.processes) do
 				table.insert(dirlist, tostring(pid))
 			end
 		elseif property ~= "" then
