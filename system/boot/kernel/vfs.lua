@@ -34,6 +34,7 @@ function vfs.resolvePathFs(path)
 			return string.sub(path, #mount.path + 1, #path), mount.fs
 		end
 	end
+	return path, vfs.mounts[1].fs
 end
 
 local function mountFromLuaFile(mountpoint, path, args)

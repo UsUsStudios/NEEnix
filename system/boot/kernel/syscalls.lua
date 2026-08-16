@@ -115,8 +115,11 @@ function calls.spawn(pcb, request) -- spawn a new process executing a function
 end
 
 function calls.exec(pcb, request) -- spawn a new process executing a file
+	continueproc(pcb)
+
 	local env = request.env or scheduler.create_env()
-	env.cwd = request.cwd or _G.cwd
+	env.cwd = request.cwd or cwd
+
 	local normalized_path, fs = vfs.resolvePathFs(request.path)
 	local fd = fs.open(pcb, normalized_path, "r")
 	local fn = load(fs.read(pcb, fd, "a"), request.path, nil, env)
