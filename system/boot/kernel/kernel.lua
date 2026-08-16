@@ -75,7 +75,7 @@ while true do
 	_G.scheduler.tick()
 	coroutine.yield()
 
-	if _G.scheduler.processes[1].state ~= "ready" then
+	if _G.scheduler.processes[1].state ~= "ready" and _G.scheduler.processes[1].state ~= "running" then
 		print("#############################################################")
 		print("##############   KERNEL PANIC: PID 1 IS DEAD   ##############")
 		print("#############################################################")

@@ -8,9 +8,12 @@ local function create(next_fd, partition, disk)
 	end
 
 	function fs.open(pcb, path, mode)
+		if not _G.files.isFile(partition .. ":/" .. path, disk) then
+			error("path is not file")
+		end
 		local handle = _G.files.open(partition .. ":/" .. path, mode, disk)
 		if not handle then
-			return error("file handle is nil")
+			error("file handle is nil")
 		end
 		local fd = next_fd()
 		pcb.fds[fd] = {
