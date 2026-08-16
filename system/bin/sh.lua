@@ -1,1 +1,1 @@
-_G.require("hi")
+require("hi")

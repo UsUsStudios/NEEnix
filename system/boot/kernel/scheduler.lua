@@ -1,6 +1,6 @@
-scheduler = {}
+_G.scheduler = {}
 
-local DEBUG_PRINT = false
+local DEBUG_PRINT = true
 
 local syscalls = include("syscalls.lua")()
 local wrap_process = include("errors.lua")()

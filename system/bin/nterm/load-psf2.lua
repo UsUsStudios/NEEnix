@@ -1,5 +1,5 @@
 -- jojotastic777, released under CC0
-local unistd = _G.require("unistd")
+local unistd = require("unistd")
 local PSF2_FONT_MAGIC = 0x864ab572
 
 -- The function which _loads the PSF2 file._

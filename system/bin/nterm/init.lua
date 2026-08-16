@@ -1,5 +1,5 @@
-local unistd = _G.require("unistd")
-local loadPSF2 = _G.require("nterm.load-psf2")
+local unistd = require("unistd")
+local loadPSF2 = require("nterm.load-psf2")
 
 local VERSION = "v1.2"
 
