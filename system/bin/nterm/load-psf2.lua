@@ -1,5 +1,5 @@
 -- jojotastic777, released under CC0
-local unistd = require("unistd")
+local unistd = _G.require("unistd")
 local PSF2_FONT_MAGIC = 0x864ab572
 
 -- The function which _loads the PSF2 file._
@@ -99,6 +99,7 @@ local function loadPSF2(path, fontOptions)
 		else
 			return err
 		end
+		return
 	end
 
 	-- Draw many glyphs according to their indices.
@@ -124,6 +125,7 @@ local function loadPSF2(path, fontOptions)
 				layer.writeData(charX - spacing, y, string.rep(bgData, spacing * glyph_height), spacing)
 			end
 		end
+		return
 	end
 
 	-- Draw a single character. Doesn't handle unicode, but usually works
@@ -145,7 +147,7 @@ local function loadPSF2(path, fontOptions)
 		Font.unicode = {}
 
 		-- Go to the start of the unicode table.
-		handle.seek("set", header_size + bytes_per_glyph * glyph_count)
+		unistd.lseek(fd, header_size + bytes_per_glyph * glyph_count, unistd.SEEK_SET)
 
 		-- A table associating unicode codepoints to a glyph index.
 		local codes = {}
@@ -154,7 +156,7 @@ local function loadPSF2(path, fontOptions)
 		-- in the font. Iterate through each entry in that table.
 		for glyphNum = 0, glyph_count - 1 do
 			local points = {}
-			local byte = handle.read(1)
+			local byte = unistd.read(fd, 1)
 
 			-- Get all the bytes in this entry of the unicode table.
 			while true do
@@ -166,7 +168,7 @@ local function loadPSF2(path, fontOptions)
 				end
 
 				table.insert(points, byte)
-				byte = handle.read(1)
+				byte = unistd.read(fd, 1)
 			end
 
 			-- For each codepoint associated with this table entry,
@@ -178,7 +180,7 @@ local function loadPSF2(path, fontOptions)
 
 		-- Get the glyph index associated with a utf8 codepoint.
 		function Font.unicode.getGlyphIndex(codepoint)
-			local glyphIndex = codes[point]
+			local glyphIndex = codes[codepoint]
 			if glyphIndex ~= nil then
 				return glyphIndex
 			else
@@ -229,6 +231,7 @@ local function loadPSF2(path, fontOptions)
 					)
 				end
 			end
+			return
 		end
 
 		-- Draw a single utf8-encoded character.
@@ -261,6 +264,7 @@ local function loadPSF2(path, fontOptions)
 
 				i = i + 1
 			end
+			return
 		end
 
 		function Font.close()

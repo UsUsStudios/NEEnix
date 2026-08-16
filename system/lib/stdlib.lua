@@ -5,6 +5,7 @@ function stdlib.getenv(name)
 	if var then
 		return var[1]
 	end
+	return
 end
 
 function stdlib.setenv(name, value, replace)
@@ -24,6 +25,7 @@ function stdlib.export(name)
 		return error("environment variable undefined")
 	end
 	coroutine.yield({ type = "setenv", name = name, value = prev[1], exported = false })
+	return
 end
 
 return stdlib
