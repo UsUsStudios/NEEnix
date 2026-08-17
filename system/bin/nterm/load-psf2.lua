@@ -99,7 +99,6 @@ local function loadPSF2(path, fontOptions)
 		else
 			return err
 		end
-		return
 	end
 
 	-- Draw many glyphs according to their indices.
@@ -111,7 +110,7 @@ local function loadPSF2(path, fontOptions)
 		local indexes = { ... }
 		for i, glyph_index in ipairs(indexes) do
 			if type(glyph_index) == "function" then
-				continue
+				goto continue
 			end
 			local charX = x + (i - 1) * (glyph_width + spacing)
 			local err = Font.drawGlyph(charX, y, drawOptions, glyph_index)
@@ -124,8 +123,8 @@ local function loadPSF2(path, fontOptions)
 			if i > 1 and spacing > 0 then
 				layer.writeData(charX - spacing, y, string.rep(bgData, spacing * glyph_height), spacing)
 			end
+			::continue::
 		end
-		return
 	end
 
 	-- Draw a single character. Doesn't handle unicode, but usually works
@@ -231,7 +230,6 @@ local function loadPSF2(path, fontOptions)
 					)
 				end
 			end
-			return
 		end
 
 		-- Draw a single utf8-encoded character.
@@ -264,7 +262,6 @@ local function loadPSF2(path, fontOptions)
 
 				i = i + 1
 			end
-			return
 		end
 
 		function Font.close()

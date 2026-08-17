@@ -23,10 +23,14 @@
 local color = loadfile("neatobios:/common/color.lua")()
 
 local byte = string.byte
-local band = bit32.band
-local rshift = bit32.rshift
+local band = function(a, b)
+	return a & b
+end
+local rshift = function(a, b)
+	return a >> b
+end
 
-function readUInt(handle, size)
+local function readUInt(handle, size)
 	local bytes = handle.read(size)
 	if not bytes or #bytes < size then
 		return nil
@@ -38,7 +42,7 @@ function readUInt(handle, size)
 	return math.floor(value)
 end
 
-function makeFont(path)
+local function makeFont(path)
 	local Font = {}
 
 	local handle = files.open(path, "rb")
@@ -73,9 +77,9 @@ function makeFont(path)
 			return nil
 		end
 
-		local version = readUInt(handle, 4)
+		local _ = readUInt(handle, 4)
 		local headerSize = readUInt(handle, 4)
-		local flags = readUInt(handle, 4)
+		local _ = readUInt(handle, 4)
 
 		numGlyphs = readUInt(handle, 4)
 		bytesPerGlyph = readUInt(handle, 4)
@@ -102,7 +106,7 @@ function makeFont(path)
 		local background = options.background or 0
 		local foreground = options.foreground or 0xffffffff
 		local charSpacing = options.charSpasing or 1
-		local layer = options.layer or screen
+		local layer = options.layer or _G.screen
 		local c = byte(char)
 
 		local bgCache = bufferCache[background]
@@ -143,10 +147,10 @@ function makeFont(path)
 				end
 				if pixel == 1 then
 					buffer[i] = string.char(fr, fg, fb, fa)
-					i += 1
+					i = i + 1
 				else
 					buffer[i] = string.char(br, bg, bb, ba)
-					i += 1
+					i = i + 1
 				end
 			end
 			layer.writeData(x, y, table.concat(buffer), glyphWidth + charSpacing)
@@ -165,7 +169,7 @@ function makeFont(path)
 	end
 
 	function Font.drawCenteredLine(y, str, options)
-		local screenSize, _ = screen.getSize()
+		local screenSize, _ = _G.screen.getSize()
 		local stringWidth = #str * (Font.getWidth() + 1)
 		Font.drawLine((screenSize - stringWidth) / 2, y, str, options)
 	end

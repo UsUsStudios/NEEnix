@@ -92,7 +92,6 @@ _G.files = {
 	-- That means that the "path" for these functions isn't ambiguous,
 	-- which means that I don't need to change it.
 	getBootPath = oldFiles.getBoothPath,
-	setBoot = oldFiles.setBoot,
 }
 
 -- Now, I write shims for the *rest* of the `files` methods.

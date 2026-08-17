@@ -32,7 +32,7 @@ local function appendText(str)
 	lines[#lines] = nil
 	while lastline:len() > termwidth do
 		if scroll == #lines - termheight then
-			scroll += 1
+			scroll = scroll + 1
 		end
 
 		lines[#lines + 1] = lastline:sub(1, termwidth)
@@ -40,7 +40,7 @@ local function appendText(str)
 	end
 
 	if scroll == #lines - termheight then
-		scroll += 1
+		scroll = scroll + 1
 	end
 	lines[#lines + 1] = lastline:sub(1, termwidth)
 end

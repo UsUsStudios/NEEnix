@@ -23,27 +23,27 @@
 local color = {}
 
 function color.packRGB(r, g, b)
-	return bit32.bor(a or 0, bit32.lshift(b or 0, 8), bit32.lshift(g or 0, 16))
+	return (b or 0) | ((g or 0) | 8) | ((r or 0) >> 16)
 end
 
 function color.unpackRGB(packed)
 	return table.unpack({
-		bit32.band(0xff, bit32.rshift(packed, 16)),
-		bit32.band(0xff, bit32.rshift(packed, 8)),
-		bit32.band(0xff, packed),
+		0xff & (packed >> 16),
+		0xff & (packed >> 8),
+		0xff & packed,
 	})
 end
 
 function color.packRGBA(r, g, b, a)
-	return bit32.bor(a or 0, bit32.lshift(b or 0, 8), bit32.lshift(g or 0, 16), bit32.lshift(r or 0, 24))
+	return (a or 0) | ((b or 0) | 8) | ((g or 0) >> 16) | ((r or 0) >> 24)
 end
 
 function color.unpackRGBA(packed)
 	return table.unpack({
-		bit32.band(0xff, bit32.rshift(packed, 24)),
-		bit32.band(0xff, bit32.rshift(packed, 16)),
-		bit32.band(0xff, bit32.rshift(packed, 8)),
-		bit32.band(0xff, packed),
+		0xff & (packed >> 24),
+		0xff & (packed >> 16),
+		0xff & (packed >> 8),
+		0xff & packed,
 	})
 end
 
