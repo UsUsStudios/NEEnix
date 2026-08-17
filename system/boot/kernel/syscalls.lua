@@ -118,7 +118,7 @@ function calls.exec(pcb, request) -- spawn a new process executing a file
 	continueproc(pcb)
 
 	local env = request.env or scheduler.create_env()
-	env.cwd = request.cwd or cwd
+	env.cwd = request.cwd or "/"
 
 	local normalized_path, fs = vfs.resolvePathFs(request.path)
 	local fd = fs.open(pcb, normalized_path, "r")

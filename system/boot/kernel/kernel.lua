@@ -28,8 +28,6 @@ local function pid1()
 	mount("/dev/popen", "pipefs")
 	mount("/dev/screen", "screenfs")
 
-	coroutine.yield({ type = "setenv", name = "hi", value = "hello", exported = true })
-
 	local pipefds, err = coroutine.yield({ type = "open", path = "/dev/popen" })
 	if err then
 		error(err)
@@ -41,7 +39,14 @@ local function pid1()
 	end
 	local stderr_in, stderr_out = table.unpack(pipefds)
 
-	coroutine.yield({ type = "exec", path = "/etc/init.d/init.lua", stdout = stdout_in, stderr = stderr_in })
+	coroutine.yield({
+		type = "exec",
+		path = "/bin/nterm/init.lua",
+		args = { "/etc/init.d/init.lua" },
+		cwd = "/bin/nterm/",
+		stdout = stdout_in,
+		stderr = stderr_in,
+	})
 
 	while true do
 		local stdout_data, err1 = coroutine.yield({ type = "read", fd = stdout_out })

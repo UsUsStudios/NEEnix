@@ -1,5 +1,5 @@
 local unistd = require("unistd")
 
-unistd.execvp("nterm")
+print("hello, world!")
 
 coroutine.yield({ type = "exit", code = 0 })
