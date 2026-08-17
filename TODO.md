@@ -7,7 +7,7 @@
   - [x] pipes, ch. 16
   - [x] sighandling, ch. 25
   - [x] processes, ch. 26 and 27
-  - [ ] system management and config, ch. 32 and 33
+  - [x] system management and config, ch. 32 and 33
   - [ ] date and time, ch. 22
   - [ ] math, ch. 19 and 20
   - [ ] bit manip, ch. 21

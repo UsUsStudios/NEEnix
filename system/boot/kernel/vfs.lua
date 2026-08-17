@@ -72,4 +72,19 @@ function vfs.mountFromFile(pcb, mountpoint, path)
 	mountFromLuaFile(mountpoint, fsfile[1], fsfile[2])
 end
 
+function vfs.unmount(mountpoint)
+	if string.sub(mountpoint, -1) ~= "/" then
+		mountpoint = mountpoint .. "/"
+	end
+
+	for i = 1, #vfs.mounts do
+		if vfs.mounts[i].path == mountpoint then
+			table.remove(vfs.mounts, i)
+			return true
+		end
+	end
+
+	return false
+end
+
 return vfs

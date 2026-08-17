@@ -206,7 +206,13 @@ end
 
 function calls.mount(pcb, request)
 	continueproc(pcb)
-	vfs.mountFromFile(pcb, request.mountpoint, request.fspath)
+	if request.unmount then
+		if not vfs.unmount(request.mountpoint) then
+			error("that path is not a mountpoint")
+		end
+	else
+		vfs.mountFromFile(pcb, request.mountpoint, request.fspath)
+	end
 end
 
 return calls
