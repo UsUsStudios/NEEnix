@@ -1,5 +1,5 @@
 local unistd = require("unistd")
-local loadPSF2 = require("nterm.load-psf2")
+local loadPSF2 = require("load-psf2")
 
 local VERSION = "v1.2"
 
@@ -91,7 +91,7 @@ end
 coroutine.yield({
 	type = "spawn",
 	fn = function()
-		local exit_code = coroutine.yield({ type = "wait", pid = program_pid })
+		local exit_code = unistd.waitpid(program_pid)
 		coroutine.yield()
 		coroutine.yield() -- wait a sec to let the parent print the error
 		coroutine.yield()

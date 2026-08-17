@@ -1,2 +1,5 @@
-coroutine.yield({ type = "exec", path = "/bin/nterm/init.lua", cwd = "/bin/" })
+local unistd = require("unistd")
+
+unistd.execvp("nterm")
+
 coroutine.yield({ type = "exit", code = 0 })

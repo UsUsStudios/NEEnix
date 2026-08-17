@@ -1,5 +1,7 @@
 local unistd = {}
 
+local stdlib = require("stdlib")
+
 local function resolveFilename(filename)
 	if filename:sub(1, 1) ~= "/" then
 		filename = _G.cwd .. filename
@@ -145,9 +147,9 @@ function unistd.pipe()
 	return table.unpack(unistd.open("/dev/popen", 1))
 end
 
--------------------------------------------------------------------------------------
-------------------------------- FILE SYSTEM INTERFACE -------------------------------
--------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------
+----------------------------- OPERATING SYSTEM INTERFACE -----------------------------
+--------------------------------------------------------------------------------------
 
 function unistd.getcwd()
 	return _G.cwd
@@ -262,6 +264,52 @@ function unistd.getopt(argv, optstring, nonoptions)
 			end
 		end
 	end
+end
+
+function unistd.execv(filename, argv, cwd)
+	if cwd:sub(#cwd, #cwd) ~= "/" then
+		cwd = cwd .. "/"
+	end
+
+	local pid, err = coroutine.yield({ type = "exec", path = filename, args = argv, cwd = cwd })
+	if err then
+		error(err)
+	end
+	return pid
+end
+
+function unistd.execvp(filename, argv)
+	local function test(path, cwd)
+		local isfile, err = coroutine.yield({ type = "isfile", path = path })
+		if err then
+			error(err)
+		end
+		if isfile then
+			return unistd.execv(path, argv, cwd)
+		end
+	end
+	if filename:sub(1, 1) == "/" then
+		return unistd.execv(filename, argv)
+	else
+		filename = "/" .. filename
+	end
+
+	for path in string.gmatch(stdlib.getenv("PATH"), "([^;]+)") do
+		local result = test(path .. filename, path)
+		if result then
+			return result
+		end
+
+		result = test(path .. filename .. "/init.lua", path .. filename)
+		if result then
+			return result
+		end
+	end
+	error("file not found in PATH")
+end
+
+function unistd.waitpid(pid)
+	return coroutine.yield({ type = "wait", pid = pid })
 end
 
 return unistd
