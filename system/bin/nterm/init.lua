@@ -36,7 +36,7 @@ local function appendText(str)
 		end
 
 		lines[#lines + 1] = lastline:sub(1, termwidth)
-		lastline = lastline:sub(termwidth, #lastline)
+		lastline = lastline:sub(termwidth + 1, #lastline)
 	end
 
 	if scroll == #lines - termheight then
