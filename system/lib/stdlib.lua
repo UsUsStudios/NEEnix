@@ -48,4 +48,23 @@ function stdlib.abort()
 	signal.kill(coroutine.yield({ type = "getpid" }), signal.SIGABRT)
 end
 
+-- PSEUDORANDOM NUMBERS
+stdlib.RAND_MAX = 2 ^ 32 - 1
+
+local x = 1 -- for GNU rand()
+
+function stdlib.rand()
+	x = math.fmod(x * 1664525 + 1013904223, stdlib.RAND_MAX + 1)
+	x = math.fmod(x ~ x >> 30, stdlib.RAND_MAX + 1)
+	x = math.fmod(x * 1664525 + 1013904223, stdlib.RAND_MAX + 1)
+	x = math.fmod(x ~ x >> 27, stdlib.RAND_MAX + 1)
+	x = math.fmod(x * 1664525 + 1013904223, stdlib.RAND_MAX + 1)
+	x = math.fmod(x ~ x >> 31, stdlib.RAND_MAX + 1)
+	return x
+end
+
+function stdlib.srand(seed)
+	x = seed
+end
+
 return stdlib

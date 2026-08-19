@@ -121,7 +121,7 @@ package.searchers = {
 		if load_err then
 			error(load_err)
 		end
-		return loader, filename
+		return loader
 	end,
 
 	-- the third and fourth searchers aren't relevant, since they're for
@@ -133,7 +133,7 @@ package.loaded = {}
 -- here it is, `require` itself!
 -- the function itself is surprisingly simple, actually. i built up all
 -- the complicated parts beforehand. this just puts it all together.
-function shim.require(modname)
+function shim.require(modname, ...)
 	-- first, check if the module is already loaded.
 	if package.loaded[modname] then
 		return package.loaded[modname]
@@ -145,7 +145,7 @@ function shim.require(modname)
 		-- if you find a searcher that returns a loader, call the loader
 		-- with `modname` and the loader data.
 		if type(loader) == "function" then
-			return loader(modname, data)
+			return loader(...)
 		end
 	end
 

@@ -64,7 +64,7 @@ local function refresh()
 	font.drawLine(offx, offy + font.height * 0.2, nil, "    nterm " .. VERSION .. ": " .. program)
 	font.drawLine(offx, offy + font.height, nil, string.rep("-", termwidth))
 
-	for i = 0, termheight do
+	for i = 0, termheight - 1 do
 		if i + scroll > #lines then
 			break
 		end
