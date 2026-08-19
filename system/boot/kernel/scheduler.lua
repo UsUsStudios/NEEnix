@@ -23,6 +23,8 @@ scheduler.ticks = 0
 scheduler.yields = 0
 scheduler.load = 0
 scheduler.ticktime = 0
+scheduler.cputime = 0
+scheduler.schedulerstart = 0
 
 local run_queue = {}
 
@@ -67,6 +69,23 @@ local function deep_copy(obj, seen)
 	return copy
 end
 
+local function setPreemptionHook(pcb, co)
+	debug.sethook(co, function()
+		local inst = 26 + #pcb.sigs * 19 -- increase the first number by 3 when I readd preemeption
+		pcb.utime = pcb.utime + 1123
+		scheduler.cputime = scheduler.cputime + 1123 + inst
+		pcb.stime = pcb.stime + inst
+		for i, sig in ipairs(pcb.sigs) do
+			if pcb.sighandlers[sig] then
+				pcb.sighandlers[sig](sig) -- run the sighandler
+			end
+			table.remove(pcb.sigs, i)
+		end
+		-- TODO: readd preemeption?
+		-- coroutine.yield()
+	end, "", 1123) -- it's not a round number so that the instruction counts are less round
+end
+
 function scheduler.create_env()
 	local env = deep_copy(_G)
 	env.chip = nil
@@ -83,6 +102,17 @@ function scheduler.create_env()
 	env.screen = nil
 	env.include = nil
 	env._VERSION = nil
+
+	local pcb
+
+	function env.coroutine.create(f)
+		local co = coroutine.create(f)
+		if not pcb then
+			pcb = scheduler.processes[coroutine.yield({ type = "getpid" })]
+		end
+		setPreemptionHook(pcb, co)
+		return co
+	end
 
 	if not DEBUG_PRINT then
 		function env.print(...)
@@ -148,21 +178,14 @@ function scheduler.new_process(fn, parent_pid, fds)
 		error = nil, -- error message to return to coroutine on next resume
 		yields = 0, -- how many yields have been processed by the scheduler
 		env = env, -- environment variables - key: name, value: {value, exported (bool)}
+		utime = 0, -- how many seconds has the CPU spent running this process's code
+		stime = 0, -- how many seconds has the CPU spent running this process's syscalls
 	}
 	pcb.co = coroutine.create(function()
 		wrap_process(fn, pcb)
 	end)
 
-	debug.sethook(pcb.co, function()
-		for i, sig in ipairs(pcb.sigs) do
-			if pcb.sighandlers[sig] then
-				pcb.sighandlers[sig](sig) -- run the sighandler
-			end
-			table.remove(pcb.sigs, i)
-		end
-		-- TODO: readd preemeption?
-		-- coroutine.yield()
-	end, "", 1500)
+	setPreemptionHook(pcb, pcb.co)
 
 	scheduler.processes[pcb.pid] = pcb
 	if parent_pid and scheduler.processes[parent_pid] then
@@ -236,6 +259,7 @@ function scheduler.tick()
 	for _, pid in ipairs(queue) do
 		local pcb = scheduler.processes[pid]
 		if pcb and pcb.state == "ready" then
+			local start = scheduler.cputime
 			scheduler.yields = scheduler.yields + 1
 			pcb.yields = pcb.yields + 1
 			pcb.state = "running"
@@ -265,6 +289,7 @@ function scheduler.tick()
 					pcb.error = err
 				end
 			end
+			pcb.stime += scheduler.cputime - start
 		end
 	end
 	scheduler.ticktime = chip.getTime() - now

@@ -113,6 +113,15 @@ local properties = {
 	memoryused = function(pcb)
 		return coroutine.memoryused(pcb.co, true)
 	end,
+	cputime = function(pcb)
+		return pcb.stime + pcb.utime
+	end,
+	stime = function(pcb)
+		return pcb.stime
+	end,
+	utime = function(pcb)
+		return pcb.utime
+	end,
 }
 
 local kernelprop = {
@@ -185,17 +194,25 @@ local kernelprop = {
 	kernelmemoryused = function()
 		return coroutine.memoryused(0, true)
 	end,
+	ips = function()
+		return scheduler.cputime / (chip.getTime() - scheduler.schedulerstart)
+	end,
+	cputime = function()
+		return scheduler.cputime
+	end,
 }
 
-local function generateBuffer(pcb, property)
+local function generateBuffer(pcb, property, self)
 	local ok, result
 	if pcb == "kernel" then
 		ok, result = pcall(kernelprop[property])
+	elseif pcb == "self" then
+		ok, result = pcall(properties[property], self)
 	else
 		ok, result = pcall(properties[property], pcb)
 	end
 	if ok then
-		return result
+		return tostring(result)
 	end
 	error("unable to generate buffer: " .. result)
 end
@@ -220,7 +237,7 @@ local function create(next_fd)
 			pcb = pathpcb,
 			property = property,
 			offset = 0,
-			buffer = generateBuffer(pathpcb, property),
+			buffer = generateBuffer(pathpcb, property, pcb),
 		}
 		return fd
 	end
@@ -231,7 +248,7 @@ local function create(next_fd)
 
 	function fs.read(pcb, fd, count)
 		if pcb.fds[fd].offset == 0 then
-			pcb.fds[fd].buffer = generateBuffer(pcb.fds[fd].pcb, pcb.fds[fd].property)
+			pcb.fds[fd].buffer = generateBuffer(pcb.fds[fd].pcb, pcb.fds[fd].property, pcb)
 		end
 
 		if count == "a" then

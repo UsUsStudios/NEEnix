@@ -10,7 +10,6 @@
   - [x] system management and config, ch. 32 and 33
   - [ ] date and time, ch. 22
   - [x] math, ch. 19 and 20
-  - [ ] bit manip, ch. 21
 
 - [ ] user input
 - [ ] terminal emulator

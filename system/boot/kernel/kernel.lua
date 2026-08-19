@@ -74,19 +74,32 @@ print("######################    NEW NEENIX SESSION STARTED    #################
 print("######################                                  ######################")
 print("##############################################################################")
 print("##############################################################################")
-scheduler.new_process(pid1)
 
-while true do
-	scheduler.tick()
-	coroutine.yield()
+local function main()
+	scheduler.new_process(pid1)
+	while true do
+		scheduler.tick()
+		coroutine.yield()
 
-	if scheduler.processes[1].state ~= "ready" and scheduler.processes[1].state ~= "running" then
-		print("#############################################################")
-		print("##############   KERNEL PANIC: PID 1 IS DEAD   ##############")
-		print("#############################################################")
-		break
+		if scheduler.processes[1].state ~= "ready" and scheduler.processes[1].state ~= "running" then
+			print("#############################################################")
+			print("##############   KERNEL PANIC: PID 1 IS DEAD   ##############")
+			print("#############################################################")
+			break
+		end
+	end
+
+	while true do
 	end
 end
 
+local co = coroutine.create(main)
+debug.sethook(co, function()
+	scheduler.cputime += 500
+end, "", 500)
+
+scheduler.schedulerstart = chip.getTime()
 while true do
+	coroutine.resume(co)
+	coroutine.yield()
 end
