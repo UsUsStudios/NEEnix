@@ -130,6 +130,7 @@ function scheduler.create_env()
 	end
 
 	env.package, env.require, env.loadfile = include("loadfile-require.lua", env)()
+	env.include = env.require
 
 	return env
 end
