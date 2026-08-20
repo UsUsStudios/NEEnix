@@ -28,9 +28,9 @@
 - [ ] neato compatability layer
 - [ ] fix error traceback to not include stack frames below the one that got the blame
 - [ ] add some languages transpiled/interpreted in lua, examples:
-  - [ ] js: <https://github.com/PaulBernier/castl>
-  - [ ] C: <https://github.com/ExAcler/XPicoC>
-  - [ ] C: <https://github.com/shinh/ELVM>
+  - [x] js: <https://github.com/PaulBernier/castl> impossible: requires debug.setmetatable
+  - [x] C: <https://github.com/ExAcler/XPicoC> functional, not tested
+  - [ ] C: <https://github.com/shinh/ELVM> delayed: already functional with XPicoC
   - [ ] scheme: <https://github.com/allea/lal>
   - [ ] lisp: <https://github.com/zick/LuaLisp>
   - [ ] lisp: <https://github.com/bullno1/mLisp/blob/master/mLisp.lua>

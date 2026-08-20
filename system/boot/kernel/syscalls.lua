@@ -122,9 +122,9 @@ function calls.exec(pcb, request) -- spawn a new process executing a file
 
 	local normalized_path, fs = vfs.resolvePathFs(request.path)
 	local fd = fs.open(pcb, normalized_path, "r")
-	local fn = load(fs.read(pcb, fd, "a"), request.path, nil, env)
-	if fn == nil then
-		error("function loaded from file invalid")
+	local fn, err = load(fs.read(pcb, fd, "a"), request.path, nil, env)
+	if err then
+		error("error loading program " .. request.path .. ": " .. err)
 	end
 
 	fs.close(pcb, fd)
@@ -213,6 +213,15 @@ function calls.mount(pcb, request)
 	else
 		vfs.mountFromFile(pcb, request.mountpoint, request.fspath)
 	end
+end
+
+-----------------------------------------------------------------------------------
+---------------------------------- MISCELLANEOUS ----------------------------------
+-----------------------------------------------------------------------------------
+
+function calls.time(pcb)
+	continueproc(pcb)
+	return chip.getUnixTime()
 end
 
 return calls
