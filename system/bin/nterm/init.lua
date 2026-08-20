@@ -46,12 +46,26 @@ local function appendText(str)
 end
 
 local function append(str)
+	local i = 0
+
 	local line_buffer = {}
-	for c in str:gmatch(".") do
+	while i <= #str do
+		i += 1
+		local c = str:sub(i, i)
 		if c == "\n" then
 			appendText(table.concat(line_buffer))
 			lines[#lines + 1] = ""
 			line_buffer = {}
+		elseif str:sub(i, i + 1) == "\r\n" then
+			appendText(table.concat(line_buffer))
+			lines[#lines + 1] = ""
+			line_buffer = {}
+			i += 1
+		elseif c == "\t" then
+			line_buffer[#line_buffer + 1] = " "
+			while #line_buffer % 4 ~= 0 do
+				line_buffer[#line_buffer + 1] = " "
+			end
 		else
 			line_buffer[#line_buffer + 1] = c
 		end

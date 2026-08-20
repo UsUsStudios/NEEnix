@@ -1,2 +1,3 @@
 local u = include("unistd")
-u.execvp("xpicoc", { "/usr/test.c" })
+
+u.write(1, "hi\n")
