@@ -4,12 +4,24 @@ local loadPSF2 = require("load-psf2")
 local VERSION = "v1.2"
 
 -- initialize the terminal font
+local font, inversefont
 local screen = unistd.open("/dev/screen", 1)
-local font, err = loadPSF2("/usr/share/consolefonts/Lat15-VGA16.psf", {
-	defaultLayer = screen,
-})
-if not font or err then
-	error(err)
+do
+	local err
+	font, err = loadPSF2("/usr/share/consolefonts/Lat15-VGA16.psf", {
+		defaultLayer = screen,
+	})
+	if not font or err then
+		error(err)
+	end
+	inversefont, err = loadPSF2("/usr/share/consolefonts/Lat15-VGA16.psf", {
+		defaultLayer = screen,
+		background = { 255, 255, 255, 255 },
+		foreground = { 0, 0, 0, 255 },
+	})
+	if not inversefont or err then
+		error(err)
+	end
 end
 
 -- open the pipes and the program that the terminal should run
@@ -20,9 +32,9 @@ local program_pid =
 	coroutine.yield({ type = "exec", path = program, stdout = stdout_in, stderr = stderr_in, cwd = "/" })
 
 local scroll = 1 -- the index of the highest line on the screen
-local offx, offy = 4, 4
-local termwidth = 99
-local termheight = 35
+local offx, offy = 4, 4 -- offset of text from corner of the screen
+local termwidth, termheight = 99, 35
+local curx, cury = 0, 0 -- cursor position
 local lines = {
 	"",
 }
@@ -47,12 +59,27 @@ end
 
 local function append(str)
 	local i = 0
-
 	local line_buffer = {}
+
+	local function handleEscape()
+		i += 1
+		local c = str:sub(i, i)
+		if str:sub(i, i + 1) == "2J" then -- erase the whole screen
+			i += 1
+			line_buffer = {}
+			lines = { "" }
+		elseif c == "H" then
+			curx, cury = 1, 1
+		end
+	end
+
 	while i <= #str do
 		i += 1
 		local c = str:sub(i, i)
-		if c == "\n" then
+		if str:sub(i, i + 1) == "\033[" then -- escape (special code)
+			i += 1 -- consume the [
+			handleEscape()
+		elseif c == "\n" then
 			appendText(table.concat(line_buffer))
 			lines[#lines + 1] = ""
 			line_buffer = {}
@@ -61,7 +88,10 @@ local function append(str)
 			lines[#lines + 1] = ""
 			line_buffer = {}
 			i += 1
-		elseif c == "\t" then
+		elseif c == "\a" then -- terminal bell
+		elseif c == "\b" then -- backspace
+			line_buffer[#line_buffer] = nil
+		elseif c == "\t" then -- horizontal tab
 			line_buffer[#line_buffer + 1] = " "
 			while #line_buffer % 4 ~= 0 do
 				line_buffer[#line_buffer + 1] = " "
@@ -74,7 +104,7 @@ local function append(str)
 end
 
 local function refresh()
-	screen.set(0x000000FF)
+	screen.set(0x000F00FF)
 	font.drawLine(offx, offy + font.height * 0.2, nil, "    nterm " .. VERSION .. ": " .. program)
 	font.drawLine(offx, offy + font.height, nil, string.rep("-", termwidth))
 
@@ -84,21 +114,17 @@ local function refresh()
 		end
 		font.drawLine(offx, offy + font.height * (i + 2), nil, lines[i + scroll]) -- to leave room for the tab name
 	end
+
+	-- draw the chararacter that the cursor is on in inverse colours
+	local c = lines[cury + scroll]
+	if c then
+		c = c:sub(curx + 1, curx + 1) or " "
+	else
+		c = " "
+	end
+	inversefont.drawGlyph(offx + font.width * curx, offy + font.height * (cury + 2), nil, string.byte(c))
+
 	screen.draw()
-end
-
-local function fetchpipes()
-	-- read stdout
-	local stdout_data = unistd.read(stdout_out, 1)
-	if stdout_data ~= "\0" then
-		append(stdout_data)
-	end
-
-	-- read stderr
-	local stderr_data = unistd.read(stderr_out, 1)
-	if stderr_data ~= "\0" then
-		append(stderr_data)
-	end
 end
 
 -- spawn a process that reports when the child process died
@@ -114,6 +140,17 @@ coroutine.yield({
 })
 
 while true do
-	fetchpipes()
+	-- read stdout
+	local stdout_data = unistd.read(stdout_out, 1)
+	if stdout_data ~= "\0" then
+		append(stdout_data)
+	end
+	refresh()
+
+	-- read stderr
+	local stderr_data = unistd.read(stderr_out, 1)
+	if stderr_data ~= "\0" then
+		append(stderr_data)
+	end
 	refresh()
 end

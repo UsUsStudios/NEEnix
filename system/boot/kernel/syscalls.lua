@@ -147,7 +147,7 @@ function calls.close(pcb, request)
 	continueproc(pcb)
 	local fd = pcb.fds[request.fd]
 	if not fd then
-		error("nonexistent file descriptor")
+		error("nonexistent file descriptor: " .. request.fd)
 	end
 	if request.fd == 0 then
 		error("cannot close STDIN")
@@ -163,7 +163,7 @@ function calls.read(pcb, request)
 	continueproc(pcb)
 	local fd = pcb.fds[request.fd]
 	if not fd then
-		error("nonexistent file descriptor")
+		error("nonexistent file descriptor: " .. request.fd)
 	end
 	return fd.fs.read(pcb, request.fd, request.count)
 end
@@ -172,7 +172,7 @@ function calls.lseek(pcb, request)
 	continueproc(pcb)
 	local fd = pcb.fds[request.fd]
 	if not fd then
-		error("nonexistent file descriptor")
+		error("nonexistent file descriptor: " .. request.fd)
 	end
 	return fd.fs.lseek(pcb, request.fd, request.offset, request.whence)
 end
@@ -181,7 +181,7 @@ function calls.write(pcb, request)
 	continueproc(pcb)
 	local fd = pcb.fds[request.fd]
 	if not fd then
-		error("nonexistent file descriptor")
+		error("nonexistent file descriptor: " .. request.fd)
 	end
 	return fd.fs.write(pcb, request.fd, request.buffer)
 end
@@ -190,7 +190,7 @@ function calls.fsync(pcb, request)
 	continueproc(pcb)
 	local fd = pcb.fds[request.fd]
 	if not fd then
-		error("nonexistent file descriptor")
+		error("nonexistent file descriptor: " .. request.fd)
 	end
 	fd.fs.fsync(pcb, request.fd, request.buffer)
 end

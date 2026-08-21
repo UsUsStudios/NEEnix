@@ -8,6 +8,7 @@
   - [x] sighandling, ch. 25
   - [x] processes, ch. 26 and 27
   - [x] system management and config, ch. 32 and 33
+  - [ ] resources, ch. 23
   - [ ] date and time, ch. 22
   - [x] math, ch. 19 and 20
 

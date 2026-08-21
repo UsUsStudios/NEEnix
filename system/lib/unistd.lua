@@ -95,6 +95,9 @@ function unistd.read(fd, count)
 	if err then
 		error(err, 2)
 	end
+	if not data then
+		error("data is nil")
+	end
 	return data
 end
 
