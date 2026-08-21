@@ -267,6 +267,7 @@ function scheduler.tick()
 			local ok, req
 			if pcb.error ~= nil then
 				ok, req = coroutine.resume(pcb.co, nil, pcb.error)
+				pcb.error = nil
 			else
 				ok, req = coroutine.resume(pcb.co, pcb.to_return)
 			end
